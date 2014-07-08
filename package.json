@@ -1,0 +1,27 @@
+{
+  "name": "jschan",
+  "description": "node.js port of docker/libchan",
+  "keywords": [
+    "docker",
+    "libchan"
+  ],
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "Peter Elger (http://nearform.com/)",
+  "contributors": [
+    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)"
+  ],
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "sprintf-js": "0.0.7"
+  },
+  "main": "lib/graft",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/graft/graft.git"
+  },
+  "devDependencies": {}
+}
