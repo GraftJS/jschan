@@ -29,3 +29,61 @@ On the server:
         msg, err := ch.Receive(libchan.Ret)
         msg.Ret.Send(&libchan.Message{Data: []byte("this is an extremely useful response")});
     }
+
+## @mcollina proposal
+
+```js
+
+var jschan = require('jschan');
+
+var chan = jschan.memChan();
+
+// High level API, probably for Seneca-like frameworks
+chan.send({ hello: 'world' }, function(err, res, stream) {
+  if (stream) {
+    console.log('we have streams!');
+  }
+  console.log(res);
+});
+
+chan.receive(function(req, done) {
+
+  var stream = new stream.PassThrough();
+
+  done(null, req, stream);
+});
+
+// streams API
+
+var msg = jschan.msg({ hello: 'world' });
+
+var Writable = require('streams').Writable;
+
+console.log(msg.data); // prints { hello: 'world' }
+
+chan.write(msg);
+
+msg.on('response', function(res) {
+
+  if (res.stream) {
+    console.log('we have streams!');
+  }
+
+  console.log(res.data);
+});
+
+var dest = new Writable({ objectMode: true });
+
+dest._write = function(msg, enc, done) {
+
+  var stream = new stream.PassThrough();
+  msg.reply(msg.data, // echo
+            stream);
+
+  done();
+};
+
+chan.pipe(dest);
+```
+
+
