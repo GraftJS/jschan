@@ -9,7 +9,8 @@
   "license": "MIT",
   "author": "Peter Elger (http://nearform.com/)",
   "contributors": [
-    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)"
+    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)",
+    "Matteo Collina <hello@matteocollina.com> (http://matteocollina.com)"
   ],
   "engines": {
     "node": "*"
@@ -19,9 +20,14 @@
     "sprintf-js": "0.0.7"
   },
   "main": "lib/graft",
+  "scripts": {
+    "test": "mocha --recursive test"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/graft/graft.git"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "mocha": "^1.20.1"
+  }
 }
