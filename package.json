@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "lodash": "~2.4.1",
+    "spdy": "^1.27.0",
     "sprintf-js": "0.0.7"
   },
   "main": "lib/graft",
