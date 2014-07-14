@@ -16,14 +16,13 @@ var server = spdy.createServer(options, function(req, res) {
 
   var stream = res.push('/hello', {});
 
-  console.log('pushing', stream._spdyState.id);
-
-  stream.write('hello world');
-
+  // write an head after opening a stream
+  // means the client receives the pushed stream before
+  // move it before res.push to try
   res.writeHead(200);
+
   res.end('hello world!');
-
-
+  stream.write('hello world');
 });
 
 var agent = spdy.createAgent({
@@ -33,22 +32,18 @@ var agent = spdy.createAgent({
 });
 
 agent.on('push', function(stream) {
-  console.log('push received!', stream.connection._spdyState.id);
-
-  console.log('parent', stream.connection._spdyState.associated);
+  console.log('Push received from parent request', stream.connection.associated.myid);
 });
 
-function startConn() {
+function startConn(myid) {
 
   var req = http.request({
     host: 'localhost',
     method: 'GET',
     agent: agent,
     path: '/'
-  }, function(response) {
-    console.log('Received stream', response.connection._spdyState.id);
-
-    console.log('----');
+  }, function() {
+    console.log('Received response', myid);
 
     // And once we're done - we may close TCP connection to server
     // NOTE: All non-closed requests will die!
@@ -56,7 +51,7 @@ function startConn() {
   });
 
   req.on('socket', function() {
-    console.log('sending', req.connection._spdyState.id);
+    req.connection.myid = myid;
   });
 
   req.end();
@@ -65,6 +60,6 @@ function startConn() {
 server.listen(1443, function() {
   console.log('server started');
 
-  startConn();
-  startConn();
+  startConn('a');
+  startConn('b');
 });
