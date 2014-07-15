@@ -41,7 +41,7 @@ var session = jschan.memorySession();
 
 session.on('channel', function server(chan) {
   chan.on('request', function(req) {
-    msg.reply(msg.data)
+    req.reply(req.data)
   })
 })
 
