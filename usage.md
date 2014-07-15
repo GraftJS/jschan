@@ -5,22 +5,22 @@ Here's an example implementing basic RPC-style request/response. We gloss over e
 On the client:
 
     var ch libchan.Sender
-    
+
     // Send a message, indicate that we want a return channel to be automatically created
     ret1, err := ch.Send(&libchan.Message{Data: []byte("request 1!"), Ret: libchan.RetPipe})
-    
+
     // Send another message on the same channel
     ret2, err := ch.Send(&libchan.Message{Data: []byte("request 2!"), Ret: libchan.RetPipe})
-    
+
     // Wait for an answer from the first request.  Set flags to zero
     // to indicate we don't want a nested return channel.
     msg, err := ret1.Receive(0)
-    
-    
+
+
 On the server:
 
     var ch libchan.Receiver
-    
+
     // Wait for messages in a loop
     // Set the return channel flag to indicate that we
     // want to receive nested channels (if any).
@@ -30,60 +30,33 @@ On the server:
         msg.Ret.Send(&libchan.Message{Data: []byte("this is an extremely useful response")});
     }
 
+__Note__ The API is proposed to change in https://github.com/docker/libchan/pull/38.
+
 ## @mcollina proposal
 
 ```js
 
-var jschan = require('jschan');
+var jschan  = require('jschan');
+var session = jschan.memorySession();
 
-var chan = jschan.memChan();
+session.on('channel', function server(chan) {
+  chan.on('request', function(req) {
+    msg.reply(msg.data)
+  })
+})
 
-// High level API, probably for Seneca-like frameworks
-chan.send({ hello: 'world' }, function(err, res, stream) {
-  if (stream) {
-    console.log('we have streams!');
-  }
-  console.log(res);
-});
 
-chan.receive(function(req, done) {
+function client() {
+  var chan = session.sendChannel();
+  var msg  = jschan.msg({ hello: 'world' });
 
-  var stream = new stream.PassThrough();
+  msg.on('response', function(res) {
+    console.log('response', res.data);
+  });
 
-  done(null, req, stream);
-});
+  chan.send(msg);
+}
 
-// streams API
-
-var msg = jschan.msg({ hello: 'world' });
-
-var Writable = require('streams').Writable;
-
-console.log(msg.data); // prints { hello: 'world' }
-
-chan.write(msg);
-
-msg.on('response', function(res) {
-
-  if (res.stream) {
-    console.log('we have streams!');
-  }
-
-  console.log(res.data);
-});
-
-var dest = new Writable({ objectMode: true });
-
-dest._write = function(msg, enc, done) {
-
-  var stream = new stream.PassThrough();
-  msg.reply(msg.data, // echo
-            stream);
-
-  done();
-};
-
-chan.pipe(dest);
+server();
+client();
 ```
-
-
