@@ -57,6 +57,5 @@ function client() {
   chan.send(msg);
 }
 
-server();
 client();
 ```
