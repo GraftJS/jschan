@@ -35,7 +35,6 @@ __Note__ The API is proposed to change in https://github.com/docker/libchan/pull
 ## @mcollina proposal
 
 ```js
-
 var jschan  = require('jschan');
 var session = jschan.memorySession();
 
