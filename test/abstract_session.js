@@ -2,7 +2,6 @@
 'use strict';
 
 var expect = require('must');
-var jschan = require('../');
 
 module.exports = function abstractSession(inBuilder, outBuilder) {
 
@@ -16,21 +15,28 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
 
   function client(done) {
     var chan   = outSession.sendChannel();
-    var msg    = jschan.msg({ hello: 'world' });
+    var ret    = chan.createReadChannel();
 
-    msg.on('response', function(res) {
-      expect(res.data).to.eql(msg.data);
+    ret.on('data', function(res) {
+      expect(res).to.eql({ hello: 'world' });
       done();
     });
 
-    chan.send(msg);
+    chan.write({
+      hello:'world',
+      returnChannel: ret
+    });
+  }
+
+  function reply(msg) {
+    var stream = msg.returnChannel;
+    delete msg.returnChannel;
+    stream.write(msg);
   }
 
   it('should send and reply', function(done) {
     inSession.on('channel', function server(chan) {
-      chan.on('request', function(req) {
-        req.reply(req.data);
-      });
+      chan.on('data', reply);
     });
 
     client(done);
@@ -40,17 +46,13 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
     client(done);
 
     inSession.on('channel', function server(chan) {
-      chan.on('request', function(req) {
-        req.reply(req.data);
-      });
+      chan.on('data', reply);
     });
   });
 
   it('should support a simpler setup', function(done) {
     inSession = inBuilder(function server(chan) {
-      chan.on('request', function(req) {
-        req.reply(req.data);
-      });
+      chan.on('data', reply);
     });
 
     outSession = outBuilder(inSession);

@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "lodash": "~2.4.1",
+    "readable-stream": "^1.0.27-1",
     "spdy": "^1.27.0",
     "sprintf-js": "0.0.7"
   },
