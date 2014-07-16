@@ -18,8 +18,10 @@
   },
   "dependencies": {
     "lodash": "~2.4.1",
+    "msgpack": "^0.2.3",
     "spdy": "^1.27.0",
-    "sprintf-js": "0.0.7"
+    "sprintf-js": "0.0.7",
+    "xtend": "^3.0.0"
   },
   "main": "lib/graft",
   "scripts": {

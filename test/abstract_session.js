@@ -14,6 +14,14 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
     outSession = outBuilder(inSession);
   });
 
+  afterEach(function(done) {
+    outSession.close(done);
+  });
+
+  afterEach(function(done) {
+    inSession.close(done);
+  });
+
   function client(done) {
     var chan   = outSession.sendChannel();
     var msg    = jschan.msg({ hello: 'world' });

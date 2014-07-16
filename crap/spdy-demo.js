@@ -6,9 +6,9 @@ var fs = require('fs');
 var http = require('http');
 
 var options = {
-  key: fs.readFileSync(__dirname + '/certificates/key.pem'),
-  cert: fs.readFileSync(__dirname + '/certificates/cert.pem'),
-  ca: fs.readFileSync(__dirname + '/certificates/csr.pem'),
+  key: fs.readFileSync(__dirname + '/../test/certificates/key.pem'),
+  cert: fs.readFileSync(__dirname + '/../test/certificates/cert.pem'),
+  ca: fs.readFileSync(__dirname + '/../test/certificates/csr.pem'),
   rejectUnauthorized: false
 };
 
