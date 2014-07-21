@@ -13,50 +13,111 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
     outSession = outBuilder(inSession);
   });
 
-  function client(done) {
-    var chan   = outSession.sendChannel();
-    var ret    = chan.createReadChannel();
+  describe('basic reply subChannel', function() {
 
-    ret.on('data', function(res) {
-      expect(res).to.eql({ hello: 'world' });
-      done();
+    function client(done) {
+      var chan   = outSession.sendChannel();
+      var ret    = chan.createReadChannel();
+
+      ret.on('data', function(res) {
+        expect(res).to.eql({ hello: 'world' });
+      });
+
+      ret.on('end', done);
+
+      chan.write({
+        hello:'world',
+        returnChannel: ret
+      });
+    }
+
+    function reply(msg) {
+      var stream = msg.returnChannel;
+      delete msg.returnChannel;
+      stream.end(msg);
+    }
+
+    it('should send and reply', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
+
+      client(done);
     });
 
-    chan.write({
-      hello:'world',
-      returnChannel: ret
-    });
-  }
+    it('should support late channel rande-vouz', function(done) {
+      client(done);
 
-  function reply(msg) {
-    var stream = msg.returnChannel;
-    delete msg.returnChannel;
-    stream.write(msg);
-  }
-
-  it('should send and reply', function(done) {
-    inSession.on('channel', function server(chan) {
-      chan.on('data', reply);
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
     });
 
-    client(done);
+    it('should support a simpler setup', function(done) {
+      inSession = inBuilder(function server(chan) {
+        chan.on('data', reply);
+      });
+
+      outSession = outBuilder(inSession);
+
+      client(done);
+    });
   });
 
-  it('should support late channel rande-vouz', function(done) {
-    client(done);
+  describe('write subChannel', function() {
 
-    inSession.on('channel', function server(chan) {
-      chan.on('data', reply);
+    function client() {
+      var chan   = outSession.sendChannel();
+      var more   = chan.createWriteChannel();
+
+      chan.write({
+        hello: 'world',
+        more: more
+      });
+
+      more.write(1);
+      more.write(2);
+      more.end(3);
+    }
+
+    function reply(done, msg) {
+      var more = msg.more;
+      var count = 0;
+
+      delete msg.more;
+      expect(msg).to.eql({ hello: 'world' });
+
+      more.on('data', function(msg) {
+        expect(msg).to.eql(++count);
+      });
+
+      more.on('end', done);
+    }
+
+    it('should receive some more update through the substream', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
+
+      client();
     });
-  });
 
-  it('should support a simpler setup', function(done) {
-    inSession = inBuilder(function server(chan) {
-      chan.on('data', reply);
+    it('should support late channel rande-vouz', function(done) {
+      client();
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
     });
 
-    outSession = outBuilder(inSession);
+    it('should support a simpler setup', function(done) {
+      inSession = inBuilder(function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
 
-    client(done);
+      outSession = outBuilder(inSession);
+
+      client(done);
+    });
   });
 };
