@@ -17,7 +17,7 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
   describe('basic reply subChannel', function() {
 
     function client(done) {
-      var chan   = outSession.sendChannel();
+      var chan   = outSession.createWriteChannel();
       var ret    = chan.createReadChannel();
 
       ret.on('data', function(res) {
@@ -68,7 +68,7 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
   describe('write subChannel', function() {
 
     function client() {
-      var chan   = outSession.sendChannel();
+      var chan   = outSession.createWriteChannel();
       var more   = chan.createWriteChannel();
 
       chan.write({
@@ -125,7 +125,7 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
   describe('binaryStream', function() {
 
     function client(done) {
-      var chan   = outSession.sendChannel();
+      var chan   = outSession.createWriteChannel();
       var bin    = chan.createBinaryStream();
 
       chan.write({

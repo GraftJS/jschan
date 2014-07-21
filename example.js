@@ -14,7 +14,7 @@ session.on('channel', function server(chan) {
 });
 
 function client() {
-  var chan = session.sendChannel();
+  var chan = session.createWriteChannel();
   var ret  = chan.createReadChannel();
   var called = false;
 
