@@ -3,7 +3,8 @@
 
 var spdy = require('spdy');
 var fs = require('fs');
-var http = require('http');
+var https = require('https');
+var Writable = require('readable-stream').Writable;
 
 var options = {
   key: fs.readFileSync(__dirname + '/../test/certificates/key.pem'),
@@ -13,6 +14,17 @@ var options = {
 };
 
 var server = spdy.createServer(options, function(req, res) {
+
+  console.log(req.headers);
+
+  var w = new Writable();
+
+  w._write = function write(buf, enc, done) {
+    console.log(buf.toString());
+    done();
+  };
+
+  req.pipe(w);
 
   var stream = res.push('/hello', {});
 
@@ -37,9 +49,9 @@ agent.on('push', function(stream) {
 
 function startConn(myid) {
 
-  var req = http.request({
+  var req = https.request({
     host: 'localhost',
-    method: 'GET',
+    method: 'POST',
     agent: agent,
     path: '/'
   }, function() {
@@ -50,12 +62,17 @@ function startConn(myid) {
     // agent.close();
   });
 
+  req.useChunkedEncodingByDefault = false;
+
   req.on('socket', function() {
     req.connection.myid = myid;
   });
 
+  req.write(new Buffer('aaaa'));
+  req.write(new Buffer('bbb'));
   req.end();
 }
+
 
 server.listen(1443, function() {
   console.log('server started');

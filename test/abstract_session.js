@@ -15,11 +15,59 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
   });
 
   afterEach(function(done) {
-    outSession.close(done);
+    outSession.close(function() {
+      // avoid errors
+      done();
+    });
   });
 
   afterEach(function(done) {
-    inSession.close(done);
+    inSession.close(function() {
+      // avoid errors
+      done();
+    });
+  });
+
+  describe('one-direction', function() {
+
+    function client() {
+      var chan   = outSession.createWriteChannel();
+
+      chan.write({
+        hello: 'world'
+      });
+    }
+
+    function reply(done, msg) {
+      expect(msg).to.eql({ hello: 'world' });
+      done();
+    }
+
+    it('should receive some more update through the substream', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
+
+      client();
+    });
+
+    it('should support late channel rande-vouz', function(done) {
+      client();
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
+    });
+
+    it('should support a simpler setup', function(done) {
+      inSession = inBuilder(function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
+
+      outSession = outBuilder(inSession);
+
+      client(done);
+    });
   });
 
   describe('basic reply subChannel', function() {
