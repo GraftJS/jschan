@@ -53,40 +53,87 @@ client();
 ## API
 
   * <a href="#session">Session Interface</a>
-  * <a href="#channel">Channel Interface</a>
-  * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
   * <a href="#sessionCreateWriteChannel"><code>session.<b>createWriteChannel()</b></code></a>
+  * <a href="#channel">Channel Interface</a>
   * <a href="#channelCreateReadChannel"><code>channel.<b>createReadChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createBinaryStream()</b></code></a>
+  * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
 
 -------------------------------------------------------
 <a name="session"></a>
 ### Session Interface
 
+A session identifies an exchange of channels between two parties: an
+initiator and a recipient. Top-level channels can only be created by the
+initiator in 'write' mode, with
+<a href="#sessionCreateWriteChannel"><code>createWriteChannel()</code></a>.
+
+
+Channels are unidirectional, but they can be nested (more on that
+later).
+
+<a name="session.createWriteChannel"></a>
+#### session.createWriteChannel()
+
+Creates a Channel in 'write mode', e.g. a `streams.Writable`.
+The channel follows the interface defined in
+<a href="#channel">Channel Interface</a>. The stream is in `objectMode`
+with an `highWaterMark` of 16.
+
+#### Event: 'channel'
+
+`function (channel) { }`
+
+Emitted each time there is a new Channel. The channel will __always__ be
+a Readable stream.
+
 -------------------------------------------------------
 <a name="channel"></a>
 ### Channel Interface
+
+A Channel is a Stream and can be a `Readable` or `Writable` depending on
+which side of the communication you are. A Channel is __never__ a
+duplex.
+
+In order to send messages through a Channel, you can use standards
+streams methods. Moreover, you can nest channels by including them
+in a message, like so:
+
+```js
+var chan = session.createWriteChannel();
+var ret  = chan.createReadChannel();
+
+ret.on('data', function(res) {
+  console.log('response', res);
+});
+
+chan.write({ returnChannel: ret });
+```
+
+<a name="channel.createReadChannel"></a>
+#### channel.createReadChannel()
+
+Returns a nested read channel, this channel will wait for data from the
+other party.
+
+<a name="channel.createWriteChannel"></a>
+#### channel.createWriteChannel()
+
+Returns a nested write channel, this channel will buffer data up until
+is received by the other party. It fully respect backpressure.
+
+<a name="channel.createBinaryStream"></a>
+### channel.createBinaryStream()
+
+Returns a nested duplex binary stream. It fully respect backpressure.
 
 -------------------------------------------------------
 <a name="memorySession"></a>
 ### jschan.memorySession()
 
--------------------------------------------------------
-<a name="session.createWriteChannel"></a>
-### session.createWriteChannel()
-
--------------------------------------------------------
-<a name="channel.createReadChannel"></a>
-### channel.createReadChannel()
-
--------------------------------------------------------
-<a name="channel.createWriteChannel"></a>
-### channel.createWriteChannel()
-
--------------------------------------------------------
-<a name="channel.createBinaryStream"></a>
-### channel.createBinaryStream()
+Returns a session that works only through the current node process
+memory.
 
 ## About LibChan
 
