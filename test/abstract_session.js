@@ -2,6 +2,7 @@
 'use strict';
 
 var expect = require('must');
+var concat = require('concat-stream');
 
 module.exports = function abstractSession(inBuilder, outBuilder) {
 
@@ -113,6 +114,67 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
     it('should support a simpler setup', function(done) {
       inSession = inBuilder(function server(chan) {
         chan.on('data', reply.bind(null, done));
+      });
+
+      outSession = outBuilder(inSession);
+
+      client(done);
+    });
+  });
+
+  describe('binaryStream', function() {
+
+    function client(done) {
+      var chan   = outSession.sendChannel();
+      var bin    = chan.createBinaryStream();
+
+      chan.write({
+        hello: 'world',
+        bin: bin
+      });
+
+      bin.write(new Buffer([1]));
+      bin.write(new Buffer([2]));
+      bin.end(new Buffer([3]));
+
+      bin.pipe(concat(function(buf) {
+        expect(buf.length).to.eql(3);
+        expect(buf[0]).to.eql(1);
+        expect(buf[1]).to.eql(2);
+        expect(buf[2]).to.eql(3);
+        done();
+      }));
+    }
+
+    function reply(msg) {
+      var bin = msg.bin;
+
+      delete msg.bin;
+      expect(msg).to.eql({ hello: 'world' });
+
+      // echo mode
+      bin.pipe(bin);
+    }
+
+    it('should receive some more update through the substream', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
+
+      client(done);
+    });
+
+    it('should support late channel rande-vouz', function(done) {
+      client(done);
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
+    });
+
+    it('should support a simpler setup', function(done) {
+      inSession = inBuilder(function server(chan) {
+        chan.on('data', reply);
       });
 
       outSession = outBuilder(inSession);
