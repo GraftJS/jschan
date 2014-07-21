@@ -7,14 +7,11 @@ var fs = require('fs');
 
 describe('spdy session', function() {
 
-  var port = 19000;
-
   function inBuilder(cb) {
     var session = jschan.spdyServerSession({
       key: fs.readFileSync(__dirname + '/certificates/key.pem'),
       cert: fs.readFileSync(__dirname + '/certificates/cert.pem'),
-      ca: fs.readFileSync(__dirname + '/certificates/csr.pem'),
-      port: port++
+      ca: fs.readFileSync(__dirname + '/certificates/csr.pem')
     }, cb);
 
     return session;
