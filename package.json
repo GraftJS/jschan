@@ -5,7 +5,7 @@
     "docker",
     "libchan"
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "author": "Peter Elger (http://nearform.com/)",
   "contributors": [
@@ -14,13 +14,13 @@
     "Adrian Rossouw <adrian@daemon.co.za> (http://daemon.co.za)"
   ],
   "engines": {
-    "node": "*"
+    "node": "v0.10.x"
   },
   "dependencies": {
-    "lodash": "~2.4.1",
-    "msgpack": "^0.2.3",
+    "msgpack5": "^1.0.0",
+    "readable-stream": "^1.0.27-1",
+    "reduplexer": "0.0.2",
     "spdy": "^1.27.0",
-    "sprintf-js": "0.0.7",
     "xtend": "^3.0.0"
   },
   "main": "lib/graft",
@@ -29,9 +29,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/graft/graft.git"
+    "url": "https://github.com/GraftJS/jschan.git"
   },
   "devDependencies": {
+    "concat-stream": "^1.4.6",
     "mocha": "^1.20.1",
     "must": "^0.12.0"
   }
