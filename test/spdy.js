@@ -29,12 +29,11 @@ describe('spdy session', function() {
     });
 
     server.on('session', function(session) {
-      console.log('new session!');
       cb(null, session, outSession);
     });
   });
 
-  afterEach(function(done) {
+  afterEach(function shutdownServer(done) {
     server.close(done);
   });
 });
