@@ -13,9 +13,10 @@ var options = {
   rejectUnauthorized: false
 };
 
-var server = spdy.createServer(options, function(req, res) {
+var server = spdy.createServer(options);
 
-  console.log(req.headers);
+server.on('request', function(req, res) {
+  console.log(req.connection.socket.socket.setted);
 
   var w = new Writable();
 
@@ -36,6 +37,12 @@ var server = spdy.createServer(options, function(req, res) {
   res.end('hello world!');
   stream.write('hello world');
 });
+
+server.on('connection', function(socket) {
+  console.log('muahhaa');
+  socket.setted = 'aaa';
+});
+
 
 var agent = spdy.createAgent({
   host: 'localhost',

@@ -21,8 +21,7 @@
     "msgpack5": "^1.0.0",
     "readable-stream": "^1.0.27-1",
     "reduplexer": "0.0.2",
-    "spdy": "^1.27.0",
-    "xtend": "^3.0.0"
+    "spdy": "^1.27.0"
   },
   "main": "lib/graft",
   "scripts": {

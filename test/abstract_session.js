@@ -4,24 +4,33 @@
 var expect = require('must');
 var concat = require('concat-stream');
 
-module.exports = function abstractSession(inBuilder, outBuilder) {
+module.exports = function abstractSession(builder) {
 
   var inSession;
   var outSession;
 
-  beforeEach(function() {
-    inSession = inBuilder();
-    outSession = outBuilder(inSession);
+  beforeEach(function buildSessions(done) {
+    builder(function(err, inS, out) {
+      if (err) {
+        return done(err);
+      }
+
+      inSession = inS;
+
+      outSession = out;
+
+      done();
+    });
   });
 
-  afterEach(function(done) {
+  afterEach(function closeOutSession(done) {
     outSession.close(function() {
       // avoid errors
       done();
     });
   });
 
-  afterEach(function(done) {
+  afterEach(function closeInSession(done) {
     inSession.close(function() {
       // avoid errors
       done();
@@ -57,16 +66,6 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', reply.bind(null, done));
       });
-    });
-
-    it('should support a simpler setup', function(done) {
-      inSession = inBuilder(function server(chan) {
-        chan.on('data', reply.bind(null, done));
-      });
-
-      outSession = outBuilder(inSession);
-
-      client(done);
     });
   });
 
@@ -108,16 +107,6 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', reply);
       });
-    });
-
-    it('should support a simpler setup', function(done) {
-      inSession = inBuilder(function server(chan) {
-        chan.on('data', reply);
-      });
-
-      outSession = outBuilder(inSession);
-
-      client(done);
     });
   });
 
@@ -165,16 +154,6 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', reply.bind(null, done));
       });
-    });
-
-    it('should support a simpler setup', function(done) {
-      inSession = inBuilder(function server(chan) {
-        chan.on('data', reply.bind(null, done));
-      });
-
-      outSession = outBuilder(inSession);
-
-      client(done);
     });
   });
 
@@ -226,16 +205,6 @@ module.exports = function abstractSession(inBuilder, outBuilder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', reply);
       });
-    });
-
-    it('should support a simpler setup', function(done) {
-      inSession = inBuilder(function server(chan) {
-        chan.on('data', reply);
-      });
-
-      outSession = outBuilder(inSession);
-
-      client(done);
     });
   });
 };
