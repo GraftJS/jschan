@@ -77,9 +77,8 @@ module.exports = function abstractSession(builder) {
 
       ret.on('data', function(res) {
         expect(res).to.eql({ hello: 'world' });
+        done();
       });
-
-      ret.on('end', done);
 
       chan.write({
         hello:'world',
@@ -153,6 +152,67 @@ module.exports = function abstractSession(builder) {
 
       inSession.on('channel', function server(chan) {
         chan.on('data', reply.bind(null, done));
+      });
+    });
+  });
+
+  describe('double nested channels', function() {
+
+    it('should support receiving a ReadChannel through a ReadChannel', function(done) {
+
+      var chan   = outSession.createWriteChannel();
+      var ret    = chan.createReadChannel();
+
+      ret.on('data', function(res) {
+        res.nested.on('data', function(msg) {
+          expect(msg).to.eql({ some: 'stuff' })
+          done();
+        })
+      });
+
+      chan.write({
+        hello:'world',
+        returnChannel: ret
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          var ret = msg.returnChannel;
+          var nested = chan.createWriteChannel();
+
+          ret.write({ nested: nested });
+
+          nested.write({ some: 'stuff' });
+        })
+      });
+    });
+
+    it('should support receiving a WriteChannel through a ReadChannel', function(done) {
+
+      var chan   = outSession.createWriteChannel();
+      var ret    = chan.createReadChannel();
+
+      ret.on('data', function(res) {
+        res.nested.end({ some: 'stuff' });
+      });
+
+      chan.write({
+        hello:'world',
+        returnChannel: ret
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          var ret = msg.returnChannel;
+          var nested = chan.createReadChannel();
+
+          ret.end({ nested: nested });
+
+          nested.on('data', function(data) {
+            expect(data).to.eql({ some: 'stuff' });
+            done();
+          });
+        })
       });
     });
   });
