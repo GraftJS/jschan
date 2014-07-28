@@ -34,12 +34,12 @@ var sender = session.createWriteChannel();
 
 console.log(process.argv.slice(3))
 var cmd = {
-  Cmd: process.argv[2],
   Args: process.argv.slice(3),
-  Stdin:  sender.createDuplexStream(),
-  Stdout: sender.createDuplexStream(),
+  Cmd: process.argv[2],
+  StatusChan: sender.createReadChannel(),
   Stderr: sender.createDuplexStream(),
-  StatusChan: sender.createReadChannel()
+  Stdin:  sender.createDuplexStream(),
+  Stdout: sender.createDuplexStream()
 }
 
 sender.write(cmd)
