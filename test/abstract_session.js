@@ -221,7 +221,7 @@ module.exports = function abstractSession(builder) {
 
     function client(done) {
       var chan   = outSession.createWriteChannel();
-      var bin    = chan.createBinaryStream();
+      var bin    = chan.createDuplexStream();
 
       chan.write({
         hello: 'world',
