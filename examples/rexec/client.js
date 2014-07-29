@@ -32,25 +32,30 @@ var sender = session.createWriteChannel();
 //          Status int
 //}
 
-console.log(process.argv.slice(3))
 var cmd = {
   Args: process.argv.slice(3),
   Cmd: process.argv[2],
   StatusChan: sender.createReadChannel(),
   Stderr: sender.createDuplexStream(),
-  Stdin:  sender.createDuplexStream(),
-  Stdout: sender.createDuplexStream()
-}
+  Stdout: sender.createDuplexStream(),
+  Stdin:  sender.createDuplexStream()
+};
 
-sender.write(cmd)
+sender.write(cmd);
 
-process.stdin.pipe(cmd.Stdin)
+process.stdin.pipe(cmd.Stdin);
 
-cmd.Stdout.pipe(process.stdout)
+cmd.Stdout.pipe(process.stdout);
 
-cmd.Stderr.pipe(process.stderr)
+cmd.Stderr.pipe(process.stderr);
+
+var status = 1;
 
 cmd.StatusChan.on('data', function(data) {
-  console.log(data)
+  sender.end();
+  status = data.Status;
+  console.log('ended with status', status);
+  setImmediate(function() {
+    process.exit(status);
+  });
 })
-
