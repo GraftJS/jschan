@@ -25,15 +25,22 @@
   },
   "main": "lib/graft",
   "scripts": {
-    "test": "mocha --recursive test"
+    "test": "mocha --recursive test",
+    "jshint": "jshint --exclude-path .gitignore ."
   },
+  "pre-commit": [
+    "jshint",
+    "test"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/GraftJS/jschan.git"
   },
   "devDependencies": {
     "concat-stream": "^1.4.6",
+    "jshint": "^2.5.2",
     "mocha": "^1.20.1",
-    "must": "^0.12.0"
+    "must": "^0.12.0",
+    "pre-commit": "0.0.9"
   }
 }

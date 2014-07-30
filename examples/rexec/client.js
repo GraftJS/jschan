@@ -5,8 +5,8 @@
 var usage = process.argv[0] + ' ' + process.argv[1] + ' command <args..>';
 
 if (!process.argv[2]) {
-  console.log(usage)
-  process.exit(1)
+  console.log(usage);
+  process.exit(1);
 }
 
 var jschan = require('../../');
@@ -40,4 +40,4 @@ cmd.StatusChan.on('data', function(data) {
     console.log('ended with status', data.Status);
     process.exit(data.Status);
   });
-})
+});

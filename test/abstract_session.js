@@ -216,9 +216,9 @@ module.exports = function abstractSession(builder) {
 
       ret.on('data', function(res) {
         res.nested.on('data', function(msg) {
-          expect(msg).to.eql({ some: 'stuff' })
+          expect(msg).to.eql({ some: 'stuff' });
           done();
-        })
+        });
       });
 
       chan.write({
@@ -234,7 +234,7 @@ module.exports = function abstractSession(builder) {
           ret.write({ nested: nested });
 
           nested.write({ some: 'stuff' });
-        })
+        });
       });
     });
 
@@ -263,7 +263,7 @@ module.exports = function abstractSession(builder) {
             expect(data).to.eql({ some: 'stuff' });
             done();
           });
-        })
+        });
       });
     });
 
