@@ -122,6 +122,8 @@ cmd.StatusChan.on('data', function(data) {
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createBinaryStream()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
+  * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
+  * <a href="#spdyServer"><code>jschan.<b>spdyServer()</b></code></a>
 
 -------------------------------------------------------
 <a name="session"></a>
@@ -236,6 +238,23 @@ function client() {
 
 client();
 ```
+
+-------------------------------------------------------
+<a name="spdyClientSession"></a>
+### jschan.spdyClientSession(options)
+
+Creates a new SPDY client session, it supports the same options of
+[spdy.Agent](https://github.com/indutny/node-spdy).
+This session can only be used to create new top-level write channels.
+
+-------------------------------------------------------
+<a name="spdyServer"></a>
+### jschan.spdyServer(options)
+
+Creates a new SPDY server, it supports the same options of
+[spdy.createServer](https://github.com/indutny/node-spdy).
+It also return a SPDY server, which is configured to emit the `'session'`
+event when a new [`Session`](#session) is started.
 
 ## About LibChan
 
