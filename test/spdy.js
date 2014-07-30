@@ -39,6 +39,7 @@ describe('spdy session', function() {
 });
 
 describe('spdy session with auto certificates', function() {
+  this.timeout(5000);
 
   var server;
 
