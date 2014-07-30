@@ -12,28 +12,34 @@ var server = jschan.spdyServer({
 
 server.listen(9323);
 
-server.on('session', function(session) {
-  session.on('channel', function(channel)  {
-    channel.on('data', function(req) {
-      var child = childProcess.spawn(
-        req.Cmd,
-        req.Args,
-        {
-          stdio: [
-            'pipe',
-            'pipe',
-            'pipe'
-          ]
-        }
-      );
+function handleReq(req) {
+  var child = childProcess.spawn(
+    req.Cmd,
+    req.Args,
+    {
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe'
+      ]
+    }
+  );
 
-      req.Stdin.pipe(child.stdin);
-      child.stdout.pipe(req.Stdout);
-      child.stderr.pipe(req.Stderr);
+  req.Stdin.pipe(child.stdin);
+  child.stdout.pipe(req.Stdout);
+  child.stderr.pipe(req.Stderr);
 
-      child.on('exit', function(status) {
-        req.StatusChan.write({ Status: status });
-      })
-    });
-  })
-});
+  child.on('exit', function(status) {
+    req.StatusChan.write({ Status: status });
+  });
+}
+
+function handleChannel(channel) {
+  channel.on('data', handleReq);
+}
+
+function handleSession(session) {
+  session.on('channel', handleChannel);
+}
+
+server.on('session', handleSession);

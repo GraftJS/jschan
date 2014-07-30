@@ -160,7 +160,7 @@ module.exports = function abstractSession(builder) {
 
     function client(done) {
       var chan   = outSession.createWriteChannel();
-      var bin    = chan.createDuplexStream();
+      var bin    = chan.createByteStream();
 
       chan.write({
         hello: 'world',
@@ -290,7 +290,7 @@ module.exports = function abstractSession(builder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', function(msg) {
           var ret = msg.returnChannel;
-          var bin = chan.createDuplexStream();
+          var bin = chan.createByteStream();
 
           ret.write({ bin: bin });
 

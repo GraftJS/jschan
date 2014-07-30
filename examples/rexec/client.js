@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 
 'use strict';
 
@@ -12,33 +13,17 @@ var jschan = require('../../');
 var session = jschan.spdyClientSession({
   host: 'localhost',
   port: 9323,
-  rejectUnauthorized: false,
-  spdy: {
-    ssl: false
-  }
+  rejectUnauthorized: false
 });
 var sender = session.createWriteChannel();
-
-//type RemoteCommand struct {
-//  Cmd        string
-//  Args       []string
-//  Stdin      io.Writer
-//  Stdout     io.Reader
-//  Stderr     io.Reader
-//  StatusChan libchan.Sender
-//}
-//
-//type CommandResponse struct {
-//          Status int
-//}
 
 var cmd = {
   Args: process.argv.slice(3),
   Cmd: process.argv[2],
   StatusChan: sender.createReadChannel(),
-  Stderr: sender.createDuplexStream(),
-  Stdout: sender.createDuplexStream(),
-  Stdin:  sender.createDuplexStream()
+  Stderr: sender.createByteStream(),
+  Stdout: sender.createByteStream(),
+  Stdin:  sender.createByteStream()
 };
 
 sender.write(cmd);
@@ -49,13 +34,10 @@ cmd.Stdout.pipe(process.stdout);
 
 cmd.Stderr.pipe(process.stderr);
 
-var status = 1;
-
 cmd.StatusChan.on('data', function(data) {
   sender.end();
-  status = data.Status;
-  console.log('ended with status', status);
   setImmediate(function() {
-    process.exit(status);
+    console.log('ended with status', data.Status);
+    process.exit(data.Status);
   });
 })
