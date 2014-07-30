@@ -156,6 +156,57 @@ module.exports = function abstractSession(builder) {
     });
   });
 
+  describe('binaryStream', function() {
+
+    function client(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = chan.createDuplexStream();
+
+      chan.write({
+        hello: 'world',
+        bin: bin
+      });
+
+      bin.write(new Buffer([1]));
+      bin.write(new Buffer([2]));
+      bin.end(new Buffer([3]));
+
+      bin.pipe(concat(function(buf) {
+        expect(buf.length).to.eql(3);
+        expect(buf[0]).to.eql(1);
+        expect(buf[1]).to.eql(2);
+        expect(buf[2]).to.eql(3);
+        done();
+      }));
+    }
+
+    function reply(msg) {
+      var bin = msg.bin;
+
+      delete msg.bin;
+      expect(msg).to.eql({ hello: 'world' });
+
+      // echo mode
+      bin.pipe(bin);
+    }
+
+    it('should receive some more update through the substream', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
+
+      client(done);
+    });
+
+    it('should support late channel rande-vouz', function(done) {
+      client(done);
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply);
+      });
+    });
+  });
+
   describe('double nested channels', function() {
 
     it('should support receiving a ReadChannel through a ReadChannel', function(done) {
@@ -215,55 +266,39 @@ module.exports = function abstractSession(builder) {
         })
       });
     });
-  });
 
-  describe('binaryStream', function() {
+    it('should support receiving a byte stream through a ReadChannel', function(done) {
 
-    function client(done) {
       var chan   = outSession.createWriteChannel();
-      var bin    = chan.createDuplexStream();
+      var ret    = chan.createReadChannel();
+
+      ret.on('data', function(res) {
+        res.bin.pipe(concat(function(buf) {
+          expect(buf.length).to.eql(3);
+          expect(buf[0]).to.eql(1);
+          expect(buf[1]).to.eql(2);
+          expect(buf[2]).to.eql(3);
+          done();
+        }));
+      });
 
       chan.write({
         hello: 'world',
-        bin: bin
+        returnChannel: ret
       });
 
-      bin.write(new Buffer([1]));
-      bin.write(new Buffer([2]));
-      bin.end(new Buffer([3]));
-
-      bin.pipe(concat(function(buf) {
-        expect(buf.length).to.eql(3);
-        expect(buf[0]).to.eql(1);
-        expect(buf[1]).to.eql(2);
-        expect(buf[2]).to.eql(3);
-        done();
-      }));
-    }
-
-    function reply(msg) {
-      var bin = msg.bin;
-
-      delete msg.bin;
-      expect(msg).to.eql({ hello: 'world' });
-
-      // echo mode
-      bin.pipe(bin);
-    }
-
-    it('should receive some more update through the substream', function(done) {
       inSession.on('channel', function server(chan) {
-        chan.on('data', reply);
-      });
+        chan.on('data', function(msg) {
+          var ret = msg.returnChannel;
+          var bin = chan.createDuplexStream();
 
-      client(done);
-    });
+          ret.write({ bin: bin });
 
-    it('should support late channel rande-vouz', function(done) {
-      client(done);
-
-      inSession.on('channel', function server(chan) {
-        chan.on('data', reply);
+          bin.write(new Buffer([1]));
+          bin.write(new Buffer([2]));
+          bin.write(new Buffer([3]));
+          bin.end();
+        });
       });
     });
   });

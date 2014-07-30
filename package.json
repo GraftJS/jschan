@@ -20,7 +20,7 @@
     "async": "^0.9.0",
     "msgpack5": "^1.0.3",
     "readable-stream": "^1.0.27-1",
-    "reduplexer": "0.0.5",
+    "reduplexer": "0.0.6",
     "spdy": "^1.27.0"
   },
   "main": "lib/graft",
