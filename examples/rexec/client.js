@@ -10,11 +10,8 @@ if (!process.argv[2]) {
 }
 
 var jschan = require('../../');
-var session = jschan.spdyClientSession({
-  host: 'localhost',
-  port: 9323,
-  rejectUnauthorized: false
-});
+var session = jschan.spdyClientSession({ port: 9323 });
+
 var sender = session.createWriteChannel();
 
 var cmd = {

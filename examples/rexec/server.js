@@ -4,12 +4,7 @@
 var jschan = require('../../');
 var childProcess = require('child_process');
 var fs = require('fs');
-var server = jschan.spdyServer({
-  key: fs.readFileSync(__dirname + '/../../test/certificates/key.pem'),
-  cert: fs.readFileSync(__dirname + '/../../test/certificates/cert.pem'),
-  ca: fs.readFileSync(__dirname + '/../../test/certificates/csr.pem')
-});
-
+var server = jschan.spdyServer();
 server.listen(9323);
 
 function handleReq(req) {

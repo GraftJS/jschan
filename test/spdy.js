@@ -37,3 +37,30 @@ describe('spdy session', function() {
     server.close(done);
   });
 });
+
+describe('spdy session with auto certificates', function() {
+
+  var server;
+
+  abstractSession(function(cb) {
+    server = jschan.spdyServer();
+    server.listen(0);
+
+    var outSession;
+
+    server.on('listening', function() {
+      outSession = jschan.spdyClientSession({
+        host: server.address().host,
+        port: server.address().port
+      });
+    });
+
+    server.on('session', function(session) {
+      cb(null, session, outSession);
+    });
+  });
+
+  afterEach(function shutdownServer(done) {
+    server.close(done);
+  });
+});

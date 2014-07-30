@@ -12,7 +12,7 @@ npm install jschan --save
 
 ## Example
 
-This examples exposes a service over SPDY.
+This example exposes a service over SPDY.
 It is built to be interoperable with the original libchan version
 [rexec](https://github.com/dmcgowan/libchan/tree/rexec_tls_support/examples/rexec).
 
@@ -27,12 +27,7 @@ execute the requests that comes through the channel.
 var jschan = require('../../');
 var childProcess = require('child_process');
 var fs = require('fs');
-var server = jschan.spdyServer({
-  key: fs.readFileSync(__dirname + '/../../test/certificates/key.pem'),
-  cert: fs.readFileSync(__dirname + '/../../test/certificates/cert.pem'),
-  ca: fs.readFileSync(__dirname + '/../../test/certificates/csr.pem')
-});
-
+var server = jschan.spdyServer();
 server.listen(9323);
 
 function handleReq(req) {
@@ -81,11 +76,7 @@ if (!process.argv[2]) {
 }
 
 var jschan = require('jschan');
-var session = jschan.spdyClientSession({
-  host: 'localhost',
-  port: 9323,
-  rejectUnauthorized: false
-});
+var session = jschan.spdyClientSession({ port: 9323 });
 var sender = session.createWriteChannel();
 
 var cmd = {
@@ -244,8 +235,11 @@ client();
 ### jschan.spdyClientSession(options)
 
 Creates a new SPDY client session, it supports the same options of
-[spdy.Agent](https://github.com/indutny/node-spdy).
+[`spdy.Agent`](https://github.com/indutny/node-spdy).
 This session can only be used to create new top-level write channels.
+
+The only option that have a different default than `spdy.Agent` is
+`rejectUnauthorized` which defaults to `false` to support ease of usage.
 
 -------------------------------------------------------
 <a name="spdyServer"></a>
@@ -256,11 +250,16 @@ Creates a new SPDY server, it supports the same options of
 It also return a SPDY server, which is configured to emit the `'session'`
 event when a new [`Session`](#session) is started.
 
+If the certificate needed by SPDY is not passed through, a new
+key pair is created on the fly using
+[self-signed](http://npm.im/self-signed).
+
 ## About LibChan
 
 It's most unique characteristic is that it replicates the semantics of go channels across network connections, while allowing for nested channels to be transferred in messages. This would let you to do things like attach a reference to a remote file on an HTTP response, that could be opened on the client side for reading or writing.
 
 The protocol uses SPDY as it's default transport with MSGPACK as it's default serialization format. Both are able to be switched out, with http1+websockets and protobuf fallbacks planned.
+SPDY is encrypted over TLS by default.
 
 While the RequestResponse pattern is the primary focus, Asynchronous Message Passing is still possible, due to the low level nature of the protocol.
 
