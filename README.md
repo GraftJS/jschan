@@ -26,7 +26,6 @@ execute the requests that comes through the channel.
 
 var jschan = require('../../');
 var childProcess = require('child_process');
-var fs = require('fs');
 var server = jschan.spdyServer();
 server.listen(9323);
 
