@@ -23,7 +23,7 @@
     "reduplexer": "0.0.6",
     "spdy": "^1.27.0"
   },
-  "main": "lib/graft",
+  "main": "index.js",
   "scripts": {
     "test": "mocha --recursive test",
     "jshint": "jshint --exclude-path .gitignore ."
