@@ -12,41 +12,94 @@ npm install jschan --save
 
 ## Example
 
+This example exposes a service over SPDY.
+It is built to be interoperable with the original libchan version
+[rexec](https://github.com/dmcgowan/libchan/tree/rexec_tls_support/examples/rexec).
+
+### Server
+
+The server opens up a jsChan server to accept new sessions, and then
+execute the requests that comes through the channel.
+
 ```js
 'use strict';
 
-var jschan  = require('jschan');
-var session = jschan.memorySession();
-var assert  = require('assert');
+var jschan = require('../../');
+var childProcess = require('child_process');
+var server = jschan.spdyServer();
+server.listen(9323);
 
-session.on('channel', function server(chan) {
-  // chan is a Readable stream
-  chan.on('data', function(msg) {
-    var returnChannel  = msg.returnChannel;
+function handleReq(req) {
+  var child = childProcess.spawn(
+    req.Cmd,
+    req.Args,
+    {
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe'
+      ]
+    }
+  );
 
-    returnChannel.write({ hello: 'world' });
+  req.Stdin.pipe(child.stdin);
+  child.stdout.pipe(req.Stdout);
+  child.stderr.pipe(req.Stderr);
+
+  child.on('exit', function(status) {
+    req.StatusChan.write({ Status: status });
   });
-});
-
-function client() {
-  // chan is a Writable stream
-  var chan = session.createWriteChannel();
-  var ret  = chan.createReadChannel();
-  var called = false;
-
-  ret.on('data', function(res) {
-    called = true;
-    console.log('response', res);
-  });
-
-  chan.write({ returnChannel: ret });
-
-  setTimeout(function() {
-    assert(called, 'no response');
-  }, 200);
 }
 
-client();
+function handleChannel(channel) {
+  channel.on('data', handleReq);
+}
+
+function handleSession(session) {
+  session.on('channel', handleChannel);
+}
+
+server.on('session', handleSession);
+```
+
+### Client
+
+```js
+'use strict';
+
+var usage = process.argv[0] + ' ' + process.argv[1] + ' command <args..>';
+
+if (!process.argv[2]) {
+  console.log(usage)
+  process.exit(1)
+}
+
+var jschan = require('jschan');
+var session = jschan.spdyClientSession({ port: 9323 });
+var sender = session.createWriteChannel();
+
+var cmd = {
+  Args: process.argv.slice(3),
+  Cmd: process.argv[2],
+  StatusChan: sender.createReadChannel(),
+  Stderr: sender.createByteStream(),
+  Stdout: sender.createByteStream(),
+  Stdin:  sender.createByteStream()
+};
+
+sender.write(cmd);
+
+process.stdin.pipe(cmd.Stdin);
+cmd.Stdout.pipe(process.stdout);
+cmd.Stderr.pipe(process.stderr);
+
+cmd.StatusChan.on('data', function(data) {
+  sender.end();
+  setImmediate(function() {
+    console.log('ended with status', data.Status);
+    process.exit(data.Status);
+  });
+})
 ```
 
 <a name="api"></a>
@@ -59,6 +112,8 @@ client();
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createBinaryStream()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
+  * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
+  * <a href="#spdyServer"><code>jschan.<b>spdyServer()</b></code></a>
 
 -------------------------------------------------------
 <a name="session"></a>
@@ -135,11 +190,75 @@ Returns a nested duplex binary stream. It fully respect backpressure.
 Returns a session that works only through the current node process
 memory.
 
+This is an examples that uses the in memory session:
+
+```js
+'use strict';
+
+var jschan  = require('jschan');
+var session = jschan.memorySession();
+var assert  = require('assert');
+
+session.on('channel', function server(chan) {
+  // chan is a Readable stream
+  chan.on('data', function(msg) {
+    var returnChannel  = msg.returnChannel;
+
+    returnChannel.write({ hello: 'world' });
+  });
+});
+
+function client() {
+  // chan is a Writable stream
+  var chan = session.createWriteChannel();
+  var ret  = chan.createReadChannel();
+  var called = false;
+
+  ret.on('data', function(res) {
+    called = true;
+    console.log('response', res);
+  });
+
+  chan.write({ returnChannel: ret });
+
+  setTimeout(function() {
+    assert(called, 'no response');
+  }, 200);
+}
+
+client();
+```
+
+-------------------------------------------------------
+<a name="spdyClientSession"></a>
+### jschan.spdyClientSession(options)
+
+Creates a new SPDY client session, it supports the same options of
+[`spdy.Agent`](https://github.com/indutny/node-spdy).
+This session can only be used to create new top-level write channels.
+
+The only option that have a different default than `spdy.Agent` is
+`rejectUnauthorized` which defaults to `false` to support ease of usage.
+
+-------------------------------------------------------
+<a name="spdyServer"></a>
+### jschan.spdyServer(options)
+
+Creates a new SPDY server, it supports the same options of
+[spdy.createServer](https://github.com/indutny/node-spdy).
+It also return a SPDY server, which is configured to emit the `'session'`
+event when a new [`Session`](#session) is started.
+
+If the certificate needed by SPDY is not passed through, a new
+key pair is created on the fly using
+[self-signed](http://npm.im/self-signed).
+
 ## About LibChan
 
 It's most unique characteristic is that it replicates the semantics of go channels across network connections, while allowing for nested channels to be transferred in messages. This would let you to do things like attach a reference to a remote file on an HTTP response, that could be opened on the client side for reading or writing.
 
 The protocol uses SPDY as it's default transport with MSGPACK as it's default serialization format. Both are able to be switched out, with http1+websockets and protobuf fallbacks planned.
+SPDY is encrypted over TLS by default.
 
 While the RequestResponse pattern is the primary focus, Asynchronous Message Passing is still possible, due to the low level nature of the protocol.
 
