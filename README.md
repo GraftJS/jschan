@@ -262,7 +262,7 @@ SPDY is encrypted over TLS by default.
 
 While the RequestResponse pattern is the primary focus, Asynchronous Message Passing is still possible, due to the low level nature of the protocol.
 
-## About Graft
+![Graft](https://rawgit.com/GraftJS/graft.io/master/static/images/graft_logo.svg)
 
 The Graft project is formed to explore the possibilities of a web where servers and clients are able to communicate freely through a microservices architecture.
 
