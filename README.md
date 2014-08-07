@@ -1,4 +1,4 @@
-# jsChan
+# jsChan&nbsp;&nbsp;[![Build Status](https://travis-ci.org/GraftJS/jschan.png)](https://travis-ci.org/GraftJS/jschan)
 
 __jsChan__ is a Node.js port for docker/libchan based around node streams
 
