@@ -3,7 +3,11 @@
   "description": "node.js port of docker/libchan",
   "keywords": [
     "docker",
-    "libchan"
+    "libchan",
+    "streams",
+    "stream",
+    "channel",
+    "channels"
   ],
   "version": "0.0.3",
   "license": "MIT",
@@ -24,9 +28,9 @@
     "self-signed": "^1.3.1",
     "spdy": "^1.27.0"
   },
-  "main": "index.js",
+  "main": "lib/jschan.js",
   "scripts": {
-    "test": "mocha --recursive test",
+    "test": "mocha --recursive test 2>&1",
     "jshint": "jshint --exclude-path .gitignore ."
   },
   "pre-commit": [

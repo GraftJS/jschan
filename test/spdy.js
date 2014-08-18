@@ -1,7 +1,7 @@
 
 'use strict';
 
-var jschan          = require('../');
+var jschan          = require('../lib/jschan');
 var abstractSession = require('./abstract_session');
 var fs = require('fs');
 
