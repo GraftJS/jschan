@@ -241,6 +241,8 @@ writable streams. This session encodes all messages in msgpack,
 and sends them over. It can work on top of TCP, websocket or
 other transports.
 
+_`streamSession` is not compatible with libchan._
+
 Supported options:
 
 - `header`: `true` or `false` (default true), specifies if
@@ -282,6 +284,8 @@ Creates a new websocket session. The url can be in the form
 'ws://localhost' or passes as an object.
 It is based on [`streamSession`](#streamSession).
 
+_`websocketClientSession` is not compatible with libchan._
+
 This method can also work in the browser thanks to
 [Browserify](http://npm.im/browserify).
 
@@ -311,6 +315,8 @@ chan.end({
 Creates a new websocketServer, or attach the websocket handler to the
 passed-through `httpServer` object.
 It is based on [`streamSession`](#streamSession).
+
+_`websocketServer` is not compatible with libchan._
 
 If a new http server is created, remeber to call listen, like so:
 
