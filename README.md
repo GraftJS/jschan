@@ -112,8 +112,11 @@ cmd.StatusChan.on('data', function(data) {
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createBinaryStream()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
+  * <a href="#streamSession"><code>jschan.<b>streamSession()</b></code></a>
   * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
   * <a href="#spdyServer"><code>jschan.<b>spdyServer()</b></code></a>
+  * <a href="#websocketClientSession"><code>jschan.<b>websocketClientSession()</b></code></a>
+  * <a href="#websocketServer"><code>jschan.<b>websocketServer()</b></code></a>
 
 -------------------------------------------------------
 <a name="session"></a>
@@ -230,6 +233,24 @@ client();
 ```
 
 -------------------------------------------------------
+<a name="streamSession"></a>
+### jschan.streamSession(readable, writable, opts)
+
+Returns a session that works over any pair of readable and
+writable streams. This session encodes all messages in msgpack,
+and sends them over. It can work on top of TCP, websocket or
+other transports.
+
+Supported options:
+
+- `header`: `true` or `false` (default true), specifies if
+  we want to prefix every msgPack message with its length.
+  This is not needed if the underlining streams have their own
+  framing.
+- `server`: `true` or `false` (default false), specifies if
+  this is the server component or the client component.
+
+-------------------------------------------------------
 <a name="spdyClientSession"></a>
 ### jschan.spdyClientSession(options)
 
@@ -252,6 +273,72 @@ event when a new [`Session`](#session) is started.
 If the certificate needed by SPDY is not passed through, a new
 key pair is created on the fly using
 [self-signed](http://npm.im/self-signed).
+
+-------------------------------------------------------
+<a name="websocketClientSession"></a>
+### jschan.websocketClientSession(url)
+
+Creates a new websocket session. The url can be in the form
+'ws://localhost' or passes as an object.
+It is based on [`streamSession`](#streamSession).
+
+This method can also work in the browser thanks to
+[Browserify](http://npm.im/browserify).
+
+Example:
+
+```js
+var jschan  = require('jschan');
+var session = jschan.websocketClientSession('ws://localhost:3000');
+var chan    = session.createWriteChannel();
+var ret     = chan.createReadChannel();
+
+ret.on('data', function(res) {
+  console.log(res);
+  session.close();
+});
+
+chan.end({
+  hello:'world',
+  returnChannel: ret
+});
+```
+
+-------------------------------------------------------
+<a name="websocketServer"></a>
+### jschan.websocketServer(options)
+
+Creates a new websocketServer, or attach the websocket handler to the
+passed-through `httpServer` object.
+It is based on [`streamSession`](#streamSession).
+
+If a new http server is created, remeber to call listen, like so:
+
+```js
+
+'use strict';
+
+var jschan = require('jschan');
+var server = jschan.websocketServer();
+
+function handleMsg(msg) {
+  var stream = msg.returnChannel;
+  delete msg.returnChannel;
+  stream.end(msg);
+}
+
+function handleChannel(chan) {
+  chan.on('data', handleMsg);
+}
+
+function handleSession(session) {
+  session.on('channel', handleChannel);
+}
+
+server.on('session', handleSession);
+
+server.listen(3000);
+```
 
 ## About LibChan
 
