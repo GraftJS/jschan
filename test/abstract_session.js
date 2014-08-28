@@ -127,6 +127,32 @@ module.exports = function abstractSession(builder) {
         chan.on('data', reply);
       });
     });
+
+    it('should reply with a big chunk', function(done) {
+      var i;
+      var data = [];
+      var chan = outSession.createWriteChannel();
+      var ret  = chan.createReadChannel();
+
+      for (i = 0; i < 3000; i++) {
+        data.push(i);
+      }
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.returnChannel.end(data);
+        });
+      });
+
+      ret.on('data', function(res) {
+        expect(res).to.eql(data);
+        done();
+      });
+
+      chan.write({
+        returnChannel: ret
+      });
+    });
   });
 
   describe('write subChannel', function() {
