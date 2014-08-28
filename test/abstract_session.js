@@ -1,8 +1,15 @@
 
 'use strict';
 
-var expect = require('must');
-var concat = require('concat-stream');
+var expect    = require('must');
+var concat    = require('concat-stream');
+var fs        = require('fs');
+var Readable  = require('readable-stream').Readable;
+var Writable  = require('readable-stream').Writable;
+var Duplex    = require('readable-stream').Duplex;
+var WritableN = require('stream').Writable;
+var DuplexN   = require('stream').Duplex;
+var Transform = require('readable-stream').Transform;
 
 module.exports = function abstractSession(builder) {
 
@@ -203,6 +210,162 @@ module.exports = function abstractSession(builder) {
 
       inSession.on('channel', function server(chan) {
         chan.on('data', reply);
+      });
+    });
+
+    it('should auto-pipe a node Readable', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var file   = __dirname + '/../package.json';
+      var bin    = fs.createReadStream(file);
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.pipe(concat(function(buf) {
+            expect(buf.toString()).to.eql(fs.readFileSync(file).toString());
+            done();
+          }));
+        });
+      });
+    });
+
+    it('should auto-pipe a Readable from readable-stream', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new Readable();
+
+      bin._read = function() {
+        this.push('hello world');
+        this.push(null);
+      };
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.pipe(concat(function(buf) {
+            expect(buf.toString()).to.eql('hello world');
+            done();
+          }));
+        });
+      });
+    });
+
+    it('should auto-pipe a Writable from readable-stream', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new Writable();
+
+      bin._write = function(chunk, enc, done) {
+        expect(chunk.toString()).to.eql('hello world');
+        done();
+      };
+
+      bin.on('finish', done);
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.end('hello world');
+        });
+      });
+    });
+
+    it('should auto-pipe a Duplex from readable-stream', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new Duplex();
+
+      bin._read = function() {
+        this.push('hello world');
+        this.push(null);
+      };
+
+      bin._write = function(chunk, enc, done) {
+        expect(chunk.toString()).to.eql('hello world');
+        done();
+      };
+
+      bin.on('finish', done);
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.pipe(msg.bin);
+        });
+      });
+    });
+
+    it('should auto-pipe a node Writable', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new WritableN();
+
+      bin._write = function(chunk, enc, done) {
+        expect(chunk.toString()).to.eql('hello world');
+        done();
+      };
+
+      bin.on('finish', done);
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.end('hello world');
+        });
+      });
+    });
+
+    it('should auto-pipe a node core Duplex', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new DuplexN();
+
+      bin._read = function() {
+        this.push('hello world');
+        this.push(null);
+      };
+
+      bin._write = function(chunk, enc, done) {
+        expect(chunk.toString()).to.eql('hello world');
+        done();
+      };
+
+      bin.on('finish', done);
+
+      chan.write({
+        bin: bin
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.bin.pipe(msg.bin);
+        });
+      });
+    });
+
+    it('should error if the stream is a Transform', function(done) {
+      var chan   = outSession.createWriteChannel();
+      var bin    = new Transform();
+
+      outSession.once('error', function(err) {
+        expect(err.message).to.eql('unable to auto-serialize a Transform stream');
+        done();
+
+        outSession.on('error', function() {});
+      });
+
+      chan.write({
+        bin: bin
       });
     });
   });
