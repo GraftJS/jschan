@@ -82,23 +82,19 @@ var cmd = {
   Args: process.argv.slice(3),
   Cmd: process.argv[2],
   StatusChan: sender.createReadChannel(),
-  Stderr: sender.createByteStream(),
-  Stdout: sender.createByteStream(),
-  Stdin:  sender.createByteStream()
+  Stderr: process.stderr,
+  Stdout: process.stdout,
+  Stdin: process.stdin
 };
 
 sender.write(cmd);
 
-process.stdin.pipe(cmd.Stdin);
-cmd.Stdout.pipe(process.stdout);
-cmd.Stderr.pipe(process.stderr);
-
 cmd.StatusChan.on('data', function(data) {
   sender.end();
-  setImmediate(function() {
+  setTimeout(function() {
     console.log('ended with status', data.Status);
     process.exit(data.Status);
-  });
+  }, 500);
 })
 ```
 
