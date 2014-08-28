@@ -89,10 +89,6 @@ var cmd = {
 
 sender.write(cmd);
 
-process.stdin.pipe(cmd.Stdin);
-cmd.Stdout.pipe(process.stdout);
-cmd.Stderr.pipe(process.stderr);
-
 cmd.StatusChan.on('data', function(data) {
   sender.end();
   setTimeout(function() {
