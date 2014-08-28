@@ -39,12 +39,14 @@ module.exports = function abstractSession(builder) {
 
   describe('one-direction', function() {
 
-    function client() {
+    function client(data) {
       var chan   = outSession.createWriteChannel();
 
-      chan.write({
+      data = data || {
         hello: 'world'
-      });
+      };
+
+      chan.write(data);
     }
 
     function reply(done, msg) {
@@ -52,12 +54,30 @@ module.exports = function abstractSession(builder) {
       done();
     }
 
-    it('should receive some more update through the substream', function(done) {
+    it('should receive a message', function(done) {
       inSession.on('channel', function server(chan) {
         chan.on('data', reply.bind(null, done));
       });
 
       client();
+    });
+
+    it('should receive a big message', function(done) {
+      var i;
+      var data = [];
+
+      for (i = 0; i < 3000; i++) {
+        data.push(i);
+      }
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          expect(msg).to.eql(data);
+          done();
+        });
+      });
+
+      client(data);
     });
 
     it('should support late channel rande-vouz', function(done) {
