@@ -5,35 +5,36 @@ var jschan          = require('../lib/jschan');
 var abstractSession = require('./abstract_session');
 var fs = require('fs');
 
-describe('spdy session', function() {
+describe.only('spdy session', function() {
 
   var server;
 
-  abstractSession(function(cb) {
+  before(function(done) {
     server = jschan.spdyServer({
       key: fs.readFileSync(__dirname + '/certificates/key.pem'),
       cert: fs.readFileSync(__dirname + '/certificates/cert.pem'),
       ca: fs.readFileSync(__dirname + '/certificates/csr.pem')
     });
 
+    server.on('listening', done);
+
     server.listen(0);
+  });
 
-    var outSession;
+  abstractSession(function(cb) {
 
-    server.on('listening', function() {
-      outSession = jschan.spdyClientSession({
-        host: server.address().host,
-        port: server.address().port,
-        rejectUnauthorized: false
-      });
+    var outSession = jschan.spdyClientSession({
+      host: server.address().host,
+      port: server.address().port,
+      rejectUnauthorized: false
     });
 
-    server.on('session', function(session) {
+    server.once('session', function(session) {
       cb(null, session, outSession);
     });
   });
 
-  afterEach(function shutdownServer(done) {
+  after(function shutdownServer(done) {
     server.close(done);
   });
 });
@@ -43,25 +44,25 @@ describe('spdy session with auto certificates', function() {
 
   var server;
 
-  abstractSession(function(cb) {
+  before(function(done) {
     server = jschan.spdyServer();
+    server.on('listening', done);
     server.listen(0);
+  });
 
-    var outSession;
+  abstractSession(function(cb) {
 
-    server.on('listening', function() {
-      outSession = jschan.spdyClientSession({
-        host: server.address().host,
-        port: server.address().port
-      });
+    var outSession = jschan.spdyClientSession({
+      host: server.address().host,
+      port: server.address().port
     });
 
-    server.on('session', function(session) {
+    server.once('session', function(session) {
       cb(null, session, outSession);
     });
   });
 
-  afterEach(function shutdownServer(done) {
+  after(function shutdownServer(done) {
     server.close(done);
   });
 });
