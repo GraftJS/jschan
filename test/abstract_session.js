@@ -413,6 +413,12 @@ module.exports = function abstractSession(builder) {
       chan.write({
         bin: bin
       });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function() {
+          // skip it
+        });
+      });
     });
   });
 
@@ -509,6 +515,18 @@ module.exports = function abstractSession(builder) {
           bin.end();
         });
       });
+    });
+  });
+
+  describe('close event', function() {
+    it('must be emitted by the server session', function(done) {
+      inSession.once('close', done);
+      inSession.close();
+    });
+
+    it('must be emitted by the client session', function(done) {
+      outSession.once('close', done);
+      outSession.close();
     });
   });
 };
