@@ -1,6 +1,6 @@
 # jschan&nbsp;&nbsp;[![Build Status](https://travis-ci.org/GraftJS/jschan.png)](https://travis-ci.org/GraftJS/jschan)
 
-__jschan__ is a JavaScript port of docker/libchan based around node streams
+__jschan__ is a JavaScript port of [libchan](https://github.com/docker/libchan) based around node streams
 
 ## Status
 
