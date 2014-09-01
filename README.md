@@ -1,8 +1,15 @@
-# jsChan&nbsp;&nbsp;[![Build Status](https://travis-ci.org/GraftJS/jschan.png)](https://travis-ci.org/GraftJS/jschan)
+# jschan&nbsp;&nbsp;[![Build Status](https://travis-ci.org/GraftJS/jschan.png)](https://travis-ci.org/GraftJS/jschan)
 
-__jsChan__ is a Node.js port for docker/libchan based around node streams
+__jschan__ is a JavaScript port of [libchan](https://github.com/docker/libchan) based around node streams
 
-__Warning: This project is still in the very early stages of development, and not production ready yet__
+## Status
+
+The jschan API should be stable at this point, but libchan is a developing standard and there may be breaking changes in future.  
+
+When used over the standard SPDY transport, jschan is compatible with the current Go reference implementation.  
+
+We also have a websocket transport to allow us to run jschan on the browser. This feature is not covered by the spec, and is not compatible with other implementations.  
+
 
 ## Install
 
@@ -18,7 +25,7 @@ It is built to be interoperable with the original libchan version
 
 ### Server
 
-The server opens up a jsChan server to accept new sessions, and then
+The server opens up a jschan server to accept new sessions, and then
 execute the requests that comes through the channel.
 
 ```js
