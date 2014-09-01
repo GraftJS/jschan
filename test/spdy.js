@@ -5,7 +5,7 @@ var jschan          = require('../lib/jschan');
 var abstractSession = require('./abstract_session');
 var fs = require('fs');
 
-describe.only('spdy session', function() {
+describe('spdy session', function() {
 
   var server;
 

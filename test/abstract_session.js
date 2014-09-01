@@ -410,14 +410,12 @@ module.exports = function abstractSession(builder) {
         outSession.on('error', function() {});
       });
 
-      chan.write({
+      chan.end({
         bin: bin
       });
 
       inSession.on('channel', function server(chan) {
-        chan.on('data', function() {
-          // skip it
-        });
+        chan.resume(); // skip all of it
       });
     });
   });
@@ -527,6 +525,111 @@ module.exports = function abstractSession(builder) {
     it('must be emitted by the client session', function(done) {
       outSession.once('close', done);
       outSession.close();
+    });
+  });
+
+  describe('double pair', function() {
+
+    var inSession2;
+    var outSession2;
+
+    beforeEach(function buildSessions2(done) {
+      builder(function(err, inS, out) {
+        if (err) {
+          return done(err);
+        }
+
+        inSession2 = inS;
+
+        outSession2 = out;
+
+        done();
+      });
+    });
+
+    afterEach(function closeOutSession2(done) {
+      outSession2.close(function() {
+        // avoid errors
+        done();
+      });
+    });
+
+    afterEach(function closeInSession2(done) {
+      inSession2.close(function() {
+        // avoid errors
+        done();
+      });
+    });
+
+    it('should pass ReadChannel between sessions', function(done) {
+      (function client1() {
+        var chan = outSession.createWriteChannel();
+        var ret  = chan.createReadChannel();
+
+        ret.on('data', function(data) {
+          data.chan.end({ hello: 'world' });
+        });
+
+        chan.write({ ret: ret });
+      })();
+
+      function client2() {
+        var chan = outSession2.createWriteChannel();
+        var ret  = chan.createReadChannel();
+
+        ret.on('data', function(data) {
+          expect(data).to.eql({ hello: 'world' });
+          done();
+        });
+
+        chan.write({ chan: ret });
+      }
+
+      (function server() {
+        inSession.once('channel', function(channel1) {
+          client2();
+          channel1.on('data', function(msg) {
+            inSession2.once('channel', function(channel2) {
+              channel2.pipe(msg.ret);
+            });
+          });
+        });
+      })();
+    });
+
+    it('should pass WriteChannel between session', function(done) {
+      (function client1() {
+        var chan = outSession.createWriteChannel();
+        var more = chan.createWriteChannel();
+
+        chan.write({ more: more });
+        more.write({ hello: 'world' });
+      })();
+
+      function client2() {
+        var chan = outSession2.createWriteChannel();
+        var ret  = chan.createReadChannel();
+
+        ret.on('data', function(msg) {
+          msg.more.on('data', function(data) {
+            expect(data).to.eql({ hello: 'world' });
+            done();
+          });
+        });
+
+        chan.write({ ret: ret });
+      }
+
+      (function server() {
+        inSession.once('channel', function(channel1) {
+          client2();
+          inSession2.once('channel', function(channel2) {
+            channel2.on('data', function(msg) {
+              channel1.pipe(msg.ret);
+            });
+          });
+        });
+      })();
     });
   });
 };
