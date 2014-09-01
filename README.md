@@ -105,6 +105,24 @@ cmd.StatusChan.on('data', function(data) {
 })
 ```
 
+## What can we write as a message?
+
+You can write:
+
+* Any plain JS object, string, number, ecc that can be serialized by
+  [msgpack5](http://npm.im/msgpack5)
+* Any channels, created from the [Channel interface](#channel)
+* Any _binary_ node streams, these will automatically be piped to jschan
+  bytestreams, e.g. you can send a `fs.createReadStream()` as it is.
+  Duplex works too, so you can send a TCP connection, too.
+
+_What is left out?_
+
+* Your custom objects, we do not want you to go through that route
+* `objectMode` streams that contains JS objects: eventually we might
+  want to autoconvert those to channels, if you care about this get in
+  touch.
+
 <a name="api"></a>
 ## API
 
@@ -113,7 +131,7 @@ cmd.StatusChan.on('data', function(data) {
   * <a href="#channel">Channel Interface</a>
   * <a href="#channelCreateReadChannel"><code>channel.<b>createReadChannel()</b></code></a>
   * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
-  * <a href="#channelCreateWriteChannel"><code>channel.<b>createBinaryStream()</b></code></a>
+  * <a href="#channelCreateBinaryStream"><code>channel.<b>createBinaryStream()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
   * <a href="#streamSession"><code>jschan.<b>streamSession()</b></code></a>
   * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
