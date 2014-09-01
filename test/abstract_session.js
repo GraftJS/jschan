@@ -528,7 +528,7 @@ module.exports = function abstractSession(builder) {
     });
   });
 
-  describe('double pair', function() {
+  describe('orchestration', function() {
 
     var inSession2;
     var outSession2;
@@ -615,6 +615,44 @@ module.exports = function abstractSession(builder) {
             expect(data).to.eql({ hello: 'world' });
             done();
           });
+        });
+
+        chan.write({ ret: ret });
+      }
+
+      (function server() {
+        inSession.once('channel', function(channel1) {
+          client2();
+          inSession2.once('channel', function(channel2) {
+            channel2.on('data', function(msg) {
+              channel1.pipe(msg.ret);
+            });
+          });
+        });
+      })();
+    });
+
+    it('should pass BinaryStream between sessions', function(done) {
+      var file   = __dirname + '/../package.json';
+
+      (function client1() {
+        var chan   = outSession.createWriteChannel();
+        var bin    = fs.createReadStream(file);
+
+        chan.write({
+          bin: bin
+        });
+      })();
+
+      function client2() {
+        var chan = outSession2.createWriteChannel();
+        var ret  = chan.createReadChannel();
+
+        ret.on('data', function(msg) {
+          msg.bin.pipe(concat(function(buf) {
+            expect(buf.toString()).to.eql(fs.readFileSync(file).toString());
+            done();
+          }));
         });
 
         chan.write({ ret: ret });
