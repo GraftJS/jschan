@@ -190,6 +190,13 @@ ret.on('data', function(res) {
 chan.write({ returnChannel: ret });
 ```
 
+Each channel has two properties to indicate its direction:
+
+* `isReadChannel`, is `true` when you can read from the channel, e.g.
+  `chan.pipe(something)`
+* `isWriteChannel`, is `true` when you can write to the channel, e.g.
+  `something.pipe(chan)`
+
 <a name="channel.createReadChannel"></a>
 #### channel.createReadChannel()
 
