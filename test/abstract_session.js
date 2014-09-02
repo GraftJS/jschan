@@ -47,7 +47,7 @@ module.exports = function abstractSession(builder) {
   describe('one-direction', function() {
 
     function client(data) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
 
       data = data || {
         hello: 'world'
@@ -99,8 +99,8 @@ module.exports = function abstractSession(builder) {
   describe('basic reply subChannel', function() {
 
     function client(done) {
-      var chan   = outSession.createWriteChannel();
-      var ret    = chan.createReadChannel();
+      var chan   = outSession.WriteChannel();
+      var ret    = chan.ReadChannel();
 
       ret.on('data', function(res) {
         expect(res).to.eql({ hello: 'world' });
@@ -138,8 +138,8 @@ module.exports = function abstractSession(builder) {
     it('should reply with a big chunk', function(done) {
       var i;
       var data = [];
-      var chan = outSession.createWriteChannel();
-      var ret  = chan.createReadChannel();
+      var chan = outSession.WriteChannel();
+      var ret  = chan.ReadChannel();
 
       for (i = 0; i < 3000; i++) {
         data.push(i);
@@ -165,8 +165,8 @@ module.exports = function abstractSession(builder) {
   describe('write subChannel', function() {
 
     function client() {
-      var chan   = outSession.createWriteChannel();
-      var more   = chan.createWriteChannel();
+      var chan   = outSession.WriteChannel();
+      var more   = chan.WriteChannel();
 
       chan.write({
         hello: 'world',
@@ -212,8 +212,8 @@ module.exports = function abstractSession(builder) {
   describe('binaryStream', function() {
 
     function client(done) {
-      var chan   = outSession.createWriteChannel();
-      var bin    = chan.createByteStream();
+      var chan   = outSession.WriteChannel();
+      var bin    = chan.ByteStream();
 
       chan.write({
         hello: 'world',
@@ -260,7 +260,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a node Readable', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var file   = __dirname + '/../package.json';
       var bin    = fs.createReadStream(file);
 
@@ -279,7 +279,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a Readable from readable-stream', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new Readable();
 
       bin._read = function() {
@@ -302,7 +302,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a Writable from readable-stream', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new Writable();
 
       bin._write = function(chunk, enc, done) {
@@ -324,7 +324,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a Duplex from readable-stream', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new Duplex();
 
       bin._read = function() {
@@ -351,7 +351,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a node Writable', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new WritableN();
 
       bin._write = function(chunk, enc, done) {
@@ -373,7 +373,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should auto-pipe a node core Duplex', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new DuplexN();
 
       bin._read = function() {
@@ -400,7 +400,7 @@ module.exports = function abstractSession(builder) {
     });
 
     it('should error if the stream is a Transform', function(done) {
-      var chan   = outSession.createWriteChannel();
+      var chan   = outSession.WriteChannel();
       var bin    = new Transform();
 
       outSession.once('error', function(err) {
@@ -424,8 +424,8 @@ module.exports = function abstractSession(builder) {
 
     it('should support receiving a ReadChannel through a ReadChannel', function(done) {
 
-      var chan   = outSession.createWriteChannel();
-      var ret    = chan.createReadChannel();
+      var chan   = outSession.WriteChannel();
+      var ret    = chan.ReadChannel();
 
       ret.on('data', function(res) {
         res.nested.on('data', function(msg) {
@@ -442,7 +442,7 @@ module.exports = function abstractSession(builder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', function(msg) {
           var ret = msg.returnChannel;
-          var nested = chan.createWriteChannel();
+          var nested = chan.WriteChannel();
 
           ret.write({ nested: nested });
 
@@ -453,8 +453,8 @@ module.exports = function abstractSession(builder) {
 
     it('should support receiving a WriteChannel through a ReadChannel', function(done) {
 
-      var chan   = outSession.createWriteChannel();
-      var ret    = chan.createReadChannel();
+      var chan   = outSession.WriteChannel();
+      var ret    = chan.ReadChannel();
 
       ret.on('data', function(res) {
         res.nested.end({ some: 'stuff' });
@@ -468,7 +468,7 @@ module.exports = function abstractSession(builder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', function(msg) {
           var ret = msg.returnChannel;
-          var nested = chan.createReadChannel();
+          var nested = chan.ReadChannel();
 
           ret.end({ nested: nested });
 
@@ -482,8 +482,8 @@ module.exports = function abstractSession(builder) {
 
     it('should support receiving a byte stream through a ReadChannel', function(done) {
 
-      var chan   = outSession.createWriteChannel();
-      var ret    = chan.createReadChannel();
+      var chan   = outSession.WriteChannel();
+      var ret    = chan.ReadChannel();
 
       ret.on('data', function(res) {
         res.bin.pipe(concat(function(buf) {
@@ -503,7 +503,7 @@ module.exports = function abstractSession(builder) {
       inSession.on('channel', function server(chan) {
         chan.on('data', function(msg) {
           var ret = msg.returnChannel;
-          var bin = chan.createByteStream();
+          var bin = chan.ByteStream();
 
           ret.write({ bin: bin });
 
@@ -563,8 +563,8 @@ module.exports = function abstractSession(builder) {
 
     it('should pass ReadChannel between sessions', function(done) {
       (function client1() {
-        var chan = outSession.createWriteChannel();
-        var ret  = chan.createReadChannel();
+        var chan = outSession.WriteChannel();
+        var ret  = chan.ReadChannel();
 
         ret.on('data', function(data) {
           data.chan.end({ hello: 'world' });
@@ -574,8 +574,8 @@ module.exports = function abstractSession(builder) {
       })();
 
       function client2() {
-        var chan = outSession2.createWriteChannel();
-        var ret  = chan.createReadChannel();
+        var chan = outSession2.WriteChannel();
+        var ret  = chan.ReadChannel();
 
         ret.on('data', function(data) {
           expect(data).to.eql({ hello: 'world' });
@@ -599,16 +599,16 @@ module.exports = function abstractSession(builder) {
 
     it('should pass WriteChannel between session', function(done) {
       (function client1() {
-        var chan = outSession.createWriteChannel();
-        var more = chan.createWriteChannel();
+        var chan = outSession.WriteChannel();
+        var more = chan.WriteChannel();
 
         chan.write({ more: more });
         more.write({ hello: 'world' });
       })();
 
       function client2() {
-        var chan = outSession2.createWriteChannel();
-        var ret  = chan.createReadChannel();
+        var chan = outSession2.WriteChannel();
+        var ret  = chan.ReadChannel();
 
         ret.on('data', function(msg) {
           msg.more.on('data', function(data) {
@@ -636,7 +636,7 @@ module.exports = function abstractSession(builder) {
       var file   = __dirname + '/../package.json';
 
       (function client1() {
-        var chan   = outSession.createWriteChannel();
+        var chan   = outSession.WriteChannel();
         var bin    = fs.createReadStream(file);
 
         chan.write({
@@ -645,8 +645,8 @@ module.exports = function abstractSession(builder) {
       })();
 
       function client2() {
-        var chan = outSession2.createWriteChannel();
-        var ret  = chan.createReadChannel();
+        var chan = outSession2.WriteChannel();
+        var ret  = chan.ReadChannel();
 
         ret.on('data', function(msg) {
           msg.bin.pipe(concat(function(buf) {

@@ -25,8 +25,8 @@ describe('websocket client on browserify', function() {
   });
 
   it('should work with an echo server', function(done) {
-    var chan   = session.createWriteChannel();
-    var ret    = chan.createReadChannel();
+    var chan   = session.WriteChannel();
+    var ret    = chan.ReadChannel();
 
     ret.on('data', function(res) {
       expect(res).to.eql({ hello: 'world' });

@@ -83,12 +83,12 @@ if (!process.argv[2]) {
 
 var jschan = require('jschan');
 var session = jschan.spdyClientSession({ port: 9323 });
-var sender = session.createWriteChannel();
+var sender = session.WriteChannel();
 
 var cmd = {
   Args: process.argv.slice(3),
   Cmd: process.argv[2],
-  StatusChan: sender.createReadChannel(),
+  StatusChan: sender.ReadChannel(),
   Stderr: process.stderr,
   Stdout: process.stdout,
   Stdin: process.stdin
@@ -152,8 +152,8 @@ initiator in 'write' mode, with
 Channels are unidirectional, but they can be nested (more on that
 later).
 
-<a name="session.createWriteChannel"></a>
-#### session.createWriteChannel()
+<a name="session.WriteChannel"></a>
+#### session.WriteChannel()
 
 Creates a Channel in 'write mode', e.g. a `streams.Writable`.
 The channel follows the interface defined in
@@ -180,8 +180,8 @@ streams methods. Moreover, you can nest channels by including them
 in a message, like so:
 
 ```js
-var chan = session.createWriteChannel();
-var ret  = chan.createReadChannel();
+var chan = session.WriteChannel();
+var ret  = chan.ReadChannel();
 
 ret.on('data', function(res) {
   console.log('response', res);
@@ -190,14 +190,14 @@ ret.on('data', function(res) {
 chan.write({ returnChannel: ret });
 ```
 
-<a name="channel.createReadChannel"></a>
-#### channel.createReadChannel()
+<a name="channel.ReadChannel"></a>
+#### channel.ReadChannel()
 
 Returns a nested read channel, this channel will wait for data from the
 other party.
 
-<a name="channel.createWriteChannel"></a>
-#### channel.createWriteChannel()
+<a name="channel.WriteChannel"></a>
+#### channel.WriteChannel()
 
 Returns a nested write channel, this channel will buffer data up until
 is received by the other party. It fully respect backpressure.
@@ -234,8 +234,8 @@ session.on('channel', function server(chan) {
 
 function client() {
   // chan is a Writable stream
-  var chan = session.createWriteChannel();
-  var ret  = chan.createReadChannel();
+  var chan = session.WriteChannel();
+  var ret  = chan.ReadChannel();
   var called = false;
 
   ret.on('data', function(res) {
@@ -315,8 +315,8 @@ Example:
 ```js
 var jschan  = require('jschan');
 var session = jschan.websocketClientSession('ws://localhost:3000');
-var chan    = session.createWriteChannel();
-var ret     = chan.createReadChannel();
+var chan    = session.WriteChannel();
+var ret     = chan.ReadChannel();
 
 ret.on('data', function(res) {
   console.log(res);
