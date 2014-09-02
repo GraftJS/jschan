@@ -12,12 +12,12 @@ if (!process.argv[2]) {
 var jschan = require('../../');
 var session = jschan.spdyClientSession({ port: 9323 });
 
-var sender = session.createWriteChannel();
+var sender = session.WriteChannel();
 
 var cmd = {
   Args: process.argv.slice(3),
   Cmd: process.argv[2],
-  StatusChan: sender.createReadChannel(),
+  StatusChan: sender.ReadChannel(),
   Stderr: process.stderr,
   Stdout: process.stdout,
   Stdin: process.stdin
