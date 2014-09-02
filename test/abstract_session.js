@@ -69,6 +69,17 @@ module.exports = function abstractSession(builder) {
       client();
     });
 
+    it('should be a readChannel server side', function(done) {
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function() {});
+        expect(chan.isReadChannel).to.be.true();
+        expect(chan.isWriteChannel).to.be.false();
+        done();
+      });
+
+      client();
+    });
+
     it('should receive a big message', function(done) {
       var i;
       var data = [];
@@ -597,7 +608,7 @@ module.exports = function abstractSession(builder) {
       })();
     });
 
-    it('should pass WriteChannel between session', function(done) {
+    it('should pass WriteChannel between sessions', function(done) {
       (function client1() {
         var chan = outSession.createWriteChannel();
         var more = chan.createWriteChannel();
