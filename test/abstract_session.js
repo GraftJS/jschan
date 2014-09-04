@@ -69,6 +69,49 @@ module.exports = function abstractSession(builder) {
       client();
     });
 
+    it('should receive 50 messages', function(done) {
+
+      var chan  = outSession.WriteChannel();
+      var count = 0;
+      var max   = 50;
+      var i;
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function() {
+          count++;
+          if (count === max) {
+            done();
+          }
+        });
+      });
+
+      for (i = 0; i < max; i++) {
+        chan.write({ hello: 'world' });
+      }
+    });
+
+    it('should receive 50 channels', function(done) {
+
+      var chan;
+      var count = 0;
+      var max   = 50;
+      var i;
+
+      inSession.on('channel', function server(chan) {
+        chan.resume();
+
+        count++;
+        if (count === max) {
+          done();
+        }
+      });
+
+      for (i = 0; i < max; i++) {
+        chan = outSession.WriteChannel();
+        chan.end({ hello: 'world' });
+      }
+    });
+
     it('should be a readChannel server side', function(done) {
       inSession.on('channel', function server(chan) {
         chan.on('data', function() {});
