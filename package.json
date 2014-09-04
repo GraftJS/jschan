@@ -11,10 +11,9 @@
   ],
   "version": "0.1.2",
   "license": "MIT",
-  "author": "Peter Elger (http://nearform.com/)",
   "contributors": [
-    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)",
     "Matteo Collina <hello@matteocollina.com> (http://matteocollina.com)",
+    "Peter Elger <elger.peter@gmail.com> (http://peterelger.com/)",
     "Adrian Rossouw <adrian@daemon.co.za> (http://daemon.co.za)"
   ],
   "engines": {
