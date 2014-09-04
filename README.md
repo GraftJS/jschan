@@ -127,11 +127,11 @@ _What is left out?_
 ## API
 
   * <a href="#session">Session Interface</a>
-  * <a href="#sessionCreateWriteChannel"><code>session.<b>createWriteChannel()</b></code></a>
+  * <a href="#session.WriteChannel"><code>session.<b>WriteChannel()</b></code></a>
   * <a href="#channel">Channel Interface</a>
-  * <a href="#channelCreateReadChannel"><code>channel.<b>createReadChannel()</b></code></a>
-  * <a href="#channelCreateWriteChannel"><code>channel.<b>createWriteChannel()</b></code></a>
-  * <a href="#channelCreateBinaryStream"><code>channel.<b>createBinaryStream()</b></code></a>
+  * <a href="#channel.ReadChannel"><code>channel.<b>ReadChannel()</b></code></a>
+  * <a href="#channel.WriteChannel"><code>channel.<b>WriteChannel()</b></code></a>
+  * <a href="#channel.BinaryStream"><code>channel.<b>BinaryStream()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
   * <a href="#streamSession"><code>jschan.<b>streamSession()</b></code></a>
   * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
@@ -146,7 +146,7 @@ _What is left out?_
 A session identifies an exchange of channels between two parties: an
 initiator and a recipient. Top-level channels can only be created by the
 initiator in 'write' mode, with
-<a href="#sessionCreateWriteChannel"><code>createWriteChannel()</code></a>.
+<a href="#session.WriteChannel"><code>WriteChannel()</code></a>.
 
 
 Channels are unidirectional, but they can be nested (more on that
@@ -209,8 +209,8 @@ other party.
 Returns a nested write channel, this channel will buffer data up until
 is received by the other party. It fully respect backpressure.
 
-<a name="channel.createBinaryStream"></a>
-### channel.createBinaryStream()
+<a name="channel.BinaryStream"></a>
+### channel.BinaryStream()
 
 Returns a nested duplex binary stream. It fully respect backpressure.
 
