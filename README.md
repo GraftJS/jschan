@@ -31,7 +31,7 @@ execute the requests that comes through the channel.
 ```js
 'use strict';
 
-var jschan = require('../../');
+var jschan = require('jschan');
 var childProcess = require('child_process');
 var server = jschan.spdyServer();
 server.listen(9323);
