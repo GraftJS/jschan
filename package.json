@@ -22,7 +22,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "inherits": "^2.0.1",
-    "msgpack5": "^1.1.1",
+    "msgpack5": "^1.2.0",
     "readable-stream": "^1.0.27-1",
     "reduplexer": "0.0.7",
     "self-signed": "^1.3.1",
