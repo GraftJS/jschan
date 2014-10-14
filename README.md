@@ -115,13 +115,14 @@ You can write:
 * Any _binary_ node streams, these will automatically be piped to jschan
   bytestreams, e.g. you can send a `fs.createReadStream()` as it is.
   Duplex works too, so you can send a TCP connection, too.
+* `objectMode: true` streams. If it's a Transform (see
+  [through2](https://github.com/rvagg/through2)) then it __must__ be
+  already piped with their source/destination.
 
 _What is left out?_
 
-* Your custom objects, we do not want you to go through that route
-* `objectMode` streams that contains JS objects: eventually we might
-  want to autoconvert those to channels, if you care about this get in
-  touch.
+* Your custom objects, we do not want you to go through that route, we
+  are already doing too much on that side with jsChan.
 
 <a name="api"></a>
 ## API
