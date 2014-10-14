@@ -10,6 +10,7 @@ var Duplex    = require('readable-stream').Duplex;
 var WritableN = require('stream').Writable;
 var DuplexN   = require('stream').Duplex;
 var Transform = require('readable-stream').Transform;
+var through   = require('through2');
 
 module.exports = function abstractSession(builder) {
 
@@ -458,7 +459,7 @@ module.exports = function abstractSession(builder) {
       var bin    = new Transform();
 
       outSession.once('error', function(err) {
-        expect(err.message).to.eql('unable to auto-serialize a Transform stream');
+        expect(err.message).to.eql('unable to auto-serialize a Transform stream not in object mode');
         done();
 
         outSession.on('error', function() {});
@@ -501,6 +502,38 @@ module.exports = function abstractSession(builder) {
           ret.write({ nested: nested });
 
           nested.write({ some: 'stuff' });
+        });
+      });
+    });
+
+    it('should auto-convert already piped transform streams in object mode into channels', function(done) {
+
+      var chan   = outSession.WriteChannel();
+      var ret    = through.obj();
+
+      ret.pipe(through.obj()).on('data', function(res) {
+        res.nested.on('data', function(msg) {
+          expect(msg).to.eql({ some: 'stuff' });
+          done();
+        });
+      });
+
+      chan.write({
+        hello:'world',
+        returnChannel: ret
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          var ret = msg.returnChannel;
+          var nested = through.obj();
+          var driver = through.obj();
+
+          driver.pipe(nested);
+
+          ret.write({ nested: nested });
+
+          driver.write({ some: 'stuff' });
         });
       });
     });
