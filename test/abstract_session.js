@@ -538,6 +538,53 @@ module.exports = function abstractSession(builder) {
       });
     });
 
+    it('should auto-convert a Readable stream', function(done) {
+      var chan   = outSession.WriteChannel();
+      var more   = new Readable({ objectMode: true });
+
+      more._read = function() {
+        this.push({ 'hello': 'world' });
+        this.push(null);
+      };
+
+      chan.write({
+        hello:'world',
+        more: more
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.more.on('data', function(data) {
+            expect(data).to.eql({ 'hello': 'world' });
+            done();
+          });
+        });
+      });
+    });
+
+    it('should auto-convert a Writable stream', function(done) {
+      var chan   = outSession.WriteChannel();
+      var more   = new Writable({ objectMode: true });
+
+      more._write = function(data, enc, cb) {
+        expect(data).to.eql({ 'hello': 'world' });
+        cb();
+        done();
+      };
+
+
+      chan.write({
+        hello:'world',
+        more: more
+      });
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', function(msg) {
+          msg.more.end({ 'hello': 'world' });
+        });
+      });
+    });
+
     it('should support receiving a WriteChannel through a ReadChannel', function(done) {
 
       var chan   = outSession.WriteChannel();
