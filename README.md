@@ -396,7 +396,7 @@ The Graft project is formed to explore the possibilities of a web where servers 
 ## Contributors
 
 * [Adrian Rossouw](http://github.com/Vertice)
-* [Peter Elgers](https://github.com/pelger)
+* [Peter Elger](https://github.com/pelger)
 * [Matteo Collina](https://github.com/mcollina)
 
 ## License
