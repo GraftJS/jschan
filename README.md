@@ -130,12 +130,12 @@ _What is left out?_
   * <a href="#session">Session Interface</a>
   * <a href="#session.WriteChannel"><code>session.<b>WriteChannel()</b></code></a>
   * <a href="#session.close"><code>session.<b>close()</b></code></a>
-  * <a href="#session.forceClose"><code>session.<b>forceClose()</b></code></a>
+  * <a href="#session.destroy"><code>session.<b>destroy()</b></code></a>
   * <a href="#channel">Channel Interface</a>
   * <a href="#channel.ReadChannel"><code>channel.<b>ReadChannel()</b></code></a>
   * <a href="#channel.WriteChannel"><code>channel.<b>WriteChannel()</b></code></a>
   * <a href="#channel.BinaryStream"><code>channel.<b>BinaryStream()</b></code></a>
-  * <a href="#channel.forceClose"><code>channel.<b>forceClose()</b></code></a>
+  * <a href="#channel.destroy"><code>channel.<b>destroy()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
   * <a href="#streamSession"><code>jschan.<b>streamSession()</b></code></a>
   * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
@@ -170,8 +170,8 @@ with an `highWaterMark` of 16.
 Close the current session, but let any Channel to finish cleanly.
 Callback is called once all channels have been closed.
 
-<a name="session.forceClose"></a>
-#### session.forceClose([callback])
+<a name="session.destroy"></a>
+#### session.destroy([callback])
 
 Terminate the current session, forcing to close all the involved
 channels.
@@ -231,8 +231,8 @@ is received by the other party. It fully respect backpressure.
 
 Returns a nested duplex binary stream. It fully respect backpressure.
 
-<a name="channel.forceClose"></a>
-#### channel.forceClose([callback])
+<a name="channel.destroy"></a>
+#### channel.destroy([callback])
 
 Close the channel now.
 

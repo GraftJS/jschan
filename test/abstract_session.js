@@ -32,14 +32,14 @@ module.exports = function abstractSession(builder) {
   });
 
   afterEach(function closeOutSession(done) {
-    outSession.forceClose(function() {
+    outSession.destroy(function() {
       // avoid errors
       done();
     });
   });
 
   afterEach(function closeInSession(done) {
-    inSession.forceClose(function() {
+    inSession.destroy(function() {
       // avoid errors
       done();
     });
@@ -696,14 +696,14 @@ module.exports = function abstractSession(builder) {
     });
 
     afterEach(function closeOutSession2(done) {
-      outSession2.forceClose(function() {
+      outSession2.destroy(function() {
         // avoid errors
         done();
       });
     });
 
     afterEach(function closeInSession2(done) {
-      inSession2.forceClose(function() {
+      inSession2.destroy(function() {
         // avoid errors
         done();
       });
