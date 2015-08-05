@@ -29,7 +29,7 @@
   },
   "main": "lib/jschan.js",
   "scripts": {
-    "test": "mocha --recursive test 2>&1",
+    "test": "_mocha --recursive test",
     "jshint": "jshint --exclude-path .gitignore .",
     "test-browser": "zuul --local 8080 -- test/websocket_client.js"
   },

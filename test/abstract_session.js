@@ -32,14 +32,14 @@ module.exports = function abstractSession(builder) {
   });
 
   afterEach(function closeOutSession(done) {
-    outSession.close(function() {
+    outSession.forceClose(function() {
       // avoid errors
       done();
     });
   });
 
   afterEach(function closeInSession(done) {
-    inSession.close(function() {
+    inSession.forceClose(function() {
       // avoid errors
       done();
     });
@@ -68,6 +68,20 @@ module.exports = function abstractSession(builder) {
       });
 
       client();
+    });
+
+    it('should receive a message if the session closes', function(done) {
+      var chan = outSession.WriteChannel();
+
+      inSession.on('channel', function server(chan) {
+        chan.on('data', reply.bind(null, done));
+      });
+
+      chan.end({
+        hello: 'world'
+      });
+
+      outSession.close();
     });
 
     it('should receive 50 messages', function(done) {
@@ -682,14 +696,14 @@ module.exports = function abstractSession(builder) {
     });
 
     afterEach(function closeOutSession2(done) {
-      outSession2.close(function() {
+      outSession2.forceClose(function() {
         // avoid errors
         done();
       });
     });
 
     afterEach(function closeInSession2(done) {
-      inSession2.close(function() {
+      inSession2.forceClose(function() {
         // avoid errors
         done();
       });
