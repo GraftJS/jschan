@@ -10,6 +10,15 @@ When used over the standard SPDY transport, jschan is compatible with the curren
 
 We also have a websocket transport to allow us to run jschan on the browser. This feature is not covered by the spec, and is not compatible with other implementations.  
 
+## Transports
+
+The jschan API has support for swappable transports, some of which are included and others which need to be installed.
+
+* memory (built-in)
+* binary streams (built-in)
+* [WebSockets](https://github.com/GraftJS/jschan-ws)
+* [SPDY](https://github.com/GraftJS/jschan-spdy)
+
 
 ## Install
 
@@ -31,9 +40,9 @@ execute the requests that comes through the channel.
 ```js
 'use strict';
 
-var jschan = require('jschan');
+var spdy = require('jschan-spdy');
 var childProcess = require('child_process');
-var server = jschan.spdyServer();
+var server = spdy.server();
 server.listen(9323);
 
 function handleReq(req) {
@@ -81,8 +90,8 @@ if (!process.argv[2]) {
   process.exit(1)
 }
 
-var jschan = require('jschan');
-var session = jschan.spdyClientSession({ port: 9323 });
+var spdy = require('jschan-spdy');
+var session = spdy.clientSession({ port: 9323 });
 var sender = session.WriteChannel();
 
 var cmd = {
@@ -138,11 +147,7 @@ _What is left out?_
   * <a href="#channel.destroy"><code>channel.<b>destroy()</b></code></a>
   * <a href="#memorySession"><code>jschan.<b>memorySession()</b></code></a>
   * <a href="#streamSession"><code>jschan.<b>streamSession()</b></code></a>
-  * <a href="#spdyClientSession"><code>jschan.<b>spdyClientSession()</b></code></a>
-  * <a href="#spdyServer"><code>jschan.<b>spdyServer()</b></code></a>
-  * <a href="#websocketClientSession"><code>jschan.<b>websocketClientSession()</b></code></a>
-  * <a href="#websocketServer"><code>jschan.<b>websocketServer()</b></code></a>
-
+  
 -------------------------------------------------------
 <a name="session"></a>
 ### Session Interface
@@ -302,99 +307,6 @@ Supported options:
 - `server`: `true` or `false` (default false), specifies if
   this is the server component or the client component.
 
--------------------------------------------------------
-<a name="spdyClientSession"></a>
-### jschan.spdyClientSession(options)
-
-Creates a new SPDY client session, it supports the same options of
-[`spdy.Agent`](https://github.com/indutny/node-spdy).
-This session can only be used to create new top-level write channels.
-
-The only option that have a different default than `spdy.Agent` is
-`rejectUnauthorized` which defaults to `false` to support ease of usage.
-
--------------------------------------------------------
-<a name="spdyServer"></a>
-### jschan.spdyServer(options)
-
-Creates a new SPDY server, it supports the same options of
-[spdy.createServer](https://github.com/indutny/node-spdy).
-It also return a SPDY server, which is configured to emit the `'session'`
-event when a new [`Session`](#session) is started.
-
-If the certificate needed by SPDY is not passed through, a new
-key pair is created on the fly using
-[self-signed](http://npm.im/self-signed).
-
--------------------------------------------------------
-<a name="websocketClientSession"></a>
-### jschan.websocketClientSession(url)
-
-Creates a new websocket session. The url can be in the form
-'ws://localhost' or passes as an object.
-It is based on [`streamSession`](#streamSession).
-
-_`websocketClientSession` is not compatible with libchan._
-
-This method can also work in the browser thanks to
-[Browserify](http://npm.im/browserify).
-
-Example:
-
-```js
-var jschan  = require('jschan');
-var session = jschan.websocketClientSession('ws://localhost:3000');
-var chan    = session.WriteChannel();
-var ret     = chan.ReadChannel();
-
-ret.on('data', function(res) {
-  console.log(res);
-  session.close();
-});
-
-chan.end({
-  hello:'world',
-  returnChannel: ret
-});
-```
-
--------------------------------------------------------
-<a name="websocketServer"></a>
-### jschan.websocketServer(options)
-
-Creates a new websocketServer, or attach the websocket handler to the
-passed-through `httpServer` object.
-It is based on [`streamSession`](#streamSession).
-
-_`websocketServer` is not compatible with libchan._
-
-If a new http server is created, remeber to call listen, like so:
-
-```js
-
-'use strict';
-
-var jschan = require('jschan');
-var server = jschan.websocketServer();
-
-function handleMsg(msg) {
-  var stream = msg.returnChannel;
-  delete msg.returnChannel;
-  stream.end(msg);
-}
-
-function handleChannel(chan) {
-  chan.on('data', handleMsg);
-}
-
-function handleSession(session) {
-  session.on('channel', handleChannel);
-}
-
-server.on('session', handleSession);
-
-server.listen(3000);
-```
 
 ## About LibChan
 
