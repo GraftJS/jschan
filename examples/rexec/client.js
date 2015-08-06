@@ -9,8 +9,8 @@ if (!process.argv[2]) {
   process.exit(1);
 }
 
-var jschan = require('../../');
-var session = jschan.spdyClientSession({ port: 9323 });
+var spdy    = require('jschan-spdy');
+var session = spdy.clientSession({ port: 9323 });
 
 var sender = session.WriteChannel();
 

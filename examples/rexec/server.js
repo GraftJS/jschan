@@ -1,8 +1,8 @@
 'use strict';
 
-var jschan = require('../../');
+var spdy = require('jschan-spdy');
 var childProcess = require('child_process');
-var server = jschan.spdyServer();
+var server = spdy.server();
 server.listen(9323);
 
 function handleReq(req) {
